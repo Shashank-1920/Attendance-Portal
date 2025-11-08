@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manual Attendance Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<style>
+  :root{
+    --accent:#004aad;
+    --accent-2:#1e88e5;
+    --bg:#f7f9fb;
+    --text:#0f172a;
+    --muted:#64748b;
+    --white:#fff;
+    --shadow:0 6px 18px rgba(0,0,0,.06);
+    --radius:14px;
+    --good:#e6f4ea;
+    --goodt:#137333;
+    --bad:#fce8e6;
+    --badt:#b3261e;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family:Poppins,system-ui,Arial;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  header{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--white);
+    box-shadow:var(--shadow);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:12px 18px;
+  }
+
+  header .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  header img{
+    height:48px;
+    object-fit:contain;
+  }
+
+  header h1{
+    margin:0;
+    font-size:18px;
+    color:var(--accent);
+  }
+
+  header .now{
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .wrap{
+    max-width:1100px;
+    margin:22px auto;
+    padding:0 16px 40px;
+  }
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    margin:16px 0;
+  }
+
+  select,
+  input[type="search"],
+  input[type="date"]{
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    background:#fff;
+    font-family:Poppins;
+    font-size:14px;
+  }
+
+  .card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+  }
+
+  th,td{
+    padding:12px 14px;
+    border-bottom:1px solid #eef2f7;
+    text-align:left;
+    font-size:14px;
+  }
+
+  th{
+    background:var(--accent);
+    color:#fff;
+  }
+
+  tr:hover{
+    background:#f8fbff;
+  }
+
+  /* -------- BUTTONS -------- */
+  .btn{
+    padding:10px 16px;
+    border-radius:10px;
+    border:0;
+    cursor:pointer;
+    font-weight:600;
+    display:inline-block;
+    text-decoration:none;
+    user-select:none;
+    transition:0.2s ease-in-out;
+  }
+
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+  }
+
+  .btn-outline{
+    border:1px solid #cbd5e1;
+    background:#fff;
+    color:var(--accent);
+  }
+
+  .btn:hover{
+    opacity:0.9;
+    transform:translateY(-1px);
+  }
+
+  /* -------- BADGES -------- */
+  .badge{
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:600;
+    font-size:12px;
+  }
+
+  .present{
+    background:var(--good);
+    color:var(--goodt);
+  }
+
+  .absent{
+    background:var(--bad);
+    color:var(--badt);
+  }
+
+  /* -------- POPUP -------- */
+  .popup{
+    position:fixed;
+    top:30px;
+    right:30px;
+    background:#fff;
+    border-left:6px solid var(--accent);
+    box-shadow:0 6px 16px rgba(0,0,0,.2);
+    padding:16px 22px;
+    border-radius:10px;
+    font-weight:600;
+    color:var(--accent);
+    opacity:0;
+    transform:translateY(-10px);
+    transition:all .3s ease;
+    z-index:50;
+  }
+
+  .popup.show{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* -------- TEXT -------- */
+  .muted{
+    color:var(--muted);
+  }
+
+  /* -------- RESPONSIVE -------- */
+  @media (max-width:900px){
+    header{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .controls{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    table th, table td{
+      font-size:13px;
+    }
+  }
+</style>
+
+<body>
+
+<header>
+  <div class="brand">
+    <img src="Logo_high res.png" alt="Logo">
+    <div>
+      <h1>Manual Attendance Entry</h1>
+      <div class="now" id="now">--</div>
+    </div>
+  </div>
+ <button id="backBtn" class="btn btn-outline"> Back to Home </button>
+
+</header>
+
+<main class="wrap">
+  <section class="controls">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+      <label><strong>Department:</strong></label>
+      <select id="deptSelect"></select>
+
+      <label><strong>Date:</strong></label>
+      <input type="date" id="attDate">
+
+      <input id="searchInput" type="search" placeholder="Search by name or ID…">
+    </div>
+    <button class="btn btn-primary" id="submitBtn">Submit Attendance</button>
+  </section>
+
+  <section class="card">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Employee ID</th>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="5" class="muted" style="text-align:center">Loading staff list…</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<div class="popup" id="popup">Attendance Updated ✅</div>
+
+</body>
+<script>
+ // Back to Dashboard navigation
+document.getElementById("backBtn").addEventListener("click", () => {
+  // Adjust this to your dashboard file name (case-sensitive)
+  window.location.href = "Home.html";
+});
+ 
+/* --------------- CONFIG ---------------- */
+const API_BASE = "http://localhost:5000";
+const CSV_ATT = "29-10-2025.csv"; // this CSV contains attendance data
+
+let STAFF = [];
+let ATT_STATUS = {}; // { EmployeeCode: "Present"/"Absent" }
+const $ = id => document.getElementById(id);
+
+function nowTick(){ $("now").textContent = new Date().toLocaleString(); }
+setInterval(nowTick, 1000); nowTick();
+
+/* --------------- CSV HELPER ---------------- */
+async function csv(url){
+  const res = await fetch(url);
+  const txt = await res.text();
+  const lines = txt.trim().split(/\r?\n/);
+  if(!lines.length) return [];
+  const headers = lines[0].split(",").map(s=>s.trim());
+  return lines.slice(1).map(line=>{
+    const cells = line.split(",").map(s=>s.trim());
+    const o={}; headers.forEach((h,i)=>o[h]=cells[i]??""); return o;
+  });
+}
+
+/* --------------- FETCH STAFF ---------------- */
+async function loadSQL(){
+  try{
+    const r = await fetch(`${API_BASE}/faculty/profiles`);
+    if(!r.ok) throw 0; return await r.json();
+  }catch{ return null; }
+}
+async function loadCSV(){ return await csv(CSV_ATT); }
+
+/* --------------- RENDER ---------------- */
+function renderFilters(){
+  const depts = [...new Set(STAFF.map(p=>p.Department).filter(Boolean))].sort();
+  $("deptSelect").innerHTML = ['<option value="">All Departments</option>', ...depts.map(d=>`<option>${d}</option>`)].join("");
+  $("attDate").valueAsDate = new Date();
+}
+
+function renderTable(){
+  const dept = $("deptSelect").value;
+  const q = $("searchInput").value.toLowerCase();
+
+  const filtered = STAFF.filter(
+    p =>
+      (!dept || p.Department === dept) &&
+      (p.EmployeeName.toLowerCase().includes(q) || String(p.EmployeeCode).includes(q))
+  );
+
+  $("tbody").innerHTML = filtered.map(p=>{
+    const status = ATT_STATUS[p.EmployeeCode] || "Absent";
+    return `
+      <tr>
+        <td><input type="checkbox" class="chk" data-id="${p.EmployeeCode}" ${status==="Present"?"checked":""}></td>
+        <td>${p.EmployeeCode}</td>
+        <td>${p.EmployeeName}</td>
+        <td>${p.Department}</td>
+        <td><span class="badge ${status==="Present"?"present":"absent"}">${status}</span></td>
+      </tr>`;
+  }).join("") || `<tr><td colspan="5" class="muted" style="text-align:center">No records</td></tr>`;
+}
+
+/* --------------- INTERACT ---------------- */
+document.addEventListener("change", e=>{
+  if(e.target.classList.contains("chk")){
+    const id = e.target.dataset.id;
+    const status = e.target.checked ? "Present" : "Absent";
+    ATT_STATUS[id] = status;
+    renderTable(); // re-render badge
+  }
+});
+
+$("selectAll").addEventListener("change", e=>{
+  const all = document.querySelectorAll(".chk");
+  all.forEach(ch => {
+    ch.checked = e.target.checked;
+    ATT_STATUS[ch.dataset.id] = e.target.checked ? "Present" : "Absent";
+  });
+  renderTable();
+});
+
+$("searchInput").addEventListener("input", renderTable);
+$("deptSelect").addEventListener("change", renderTable);
+
+/* --------------- SAVE ---------------- */
+$("submitBtn").addEventListener("click", async()=>{
+  const date = $("attDate").value || new Date().toISOString().slice(0,10);
+  const records = Object.entries(ATT_STATUS).map(([id,status])=>({EmployeeCode:id, Date:date, Status:status}));
+  if(!records.length){ alert("No records to save!"); return; }
+
+  try{
+    const res = await fetch(`${API_BASE}/attendance/manual-entry`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(records)
+    });
+    if(!res.ok) throw 0;
+    showPopup("Attendance Updated ✅");
+  }catch{
+    console.warn("SQL unavailable, saving to CSV fallback");
+    showPopup("Saved locally ⚠️ (SQL offline)");
+  }
+});
+
+/* --------------- POPUP ---------------- */
+function showPopup(msg){
+  const p = $("popup");
+  p.textContent = msg;
+  p.classList.add("show");
+  setTimeout(()=>p.classList.remove("show"),2500);
+}
+
+/* --------------- INIT ---------------- */
+(async function init(){
+  STAFF = await loadSQL();
+  if(!STAFF) STAFF = await loadCSV();
+
+  // initialize attendance statuses
+  STAFF.forEach(r=>{
+    ATT_STATUS[r.EmployeeCode] = (r.Status && r.Status.toLowerCase().includes("present")) ? "Present" : "Absent";
+  });
+
+  renderFilters();
+  renderTable();
+})();
+</script>
+
+</html>

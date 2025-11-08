@@ -1,0 +1,1894 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Faculty Dashboard – SCSVMV</title>
+
+  <!-- XLSX (SheetJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+  <style>
+    :root{
+      --accent:#0d47a1;
+      --accent-light:#1976d2;
+      --muted:#5b6b89;
+      --glass: rgba(255,255,255,0.85);
+      --glass-2: rgba(255,255,255,0.22);
+      --bg-start:#f3f6fb;
+      --bg-end:#eaf2ff;
+      --card-radius:16px;
+      --max-width:1300px;
+      --nav-height:56px;
+      --success:#22c55e;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      color:#0c2340;
+      font-family: "Inter", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+      background-image: url('./GlassMorph3.png');
+      background-repeat: no-repeat;
+      background-position: center top;
+      background-size: cover;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color:var(--text, #0c2340);
+      position: relative;
+    }
+
+    /* Animated background overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(13,71,161,0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(122,92,255,0.08) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .wrap{
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER with enhanced glass effect */
+    header.app-header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      background: rgba(255,255,255,0.75);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.08), 
+                  inset 0 1px 1px rgba(255,255,255,0.9);
+      padding: 20px 24px;
+      margin-top: 20px;
+      backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.8);
+      transition: all 0.3s ease;
+      animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header.app-header:hover {
+      box-shadow: 0 12px 40px rgba(12,35,64,0.12), 
+                  inset 0 1px 1px rgba(255,255,255,0.9);
+    }
+
+    .logo-box{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      min-width: 240px;
+    }
+    .logo-box img{
+      width:88px;
+      height:88px;
+      object-fit:contain;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(13,71,161,0.12), rgba(122,92,255,0.08));
+      padding:10px;
+      box-shadow: 0 8px 20px rgba(13,71,161,0.08);
+      transition: transform 0.3s ease;
+    }
+    .logo-box img:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+    .uni-title{
+      flex:1;
+      text-align:center;
+      font-size:1.2rem;
+      font-weight:700;
+      color:var(--accent);
+      letter-spacing:0.3px;
+      line-height: 1.4;
+    }
+    .status-badge{
+      min-width:200px;
+      text-align:center;
+      padding:10px 16px;
+      border-radius:999px;
+      color:#fff;
+      font-weight:700;
+      font-size: 0.9rem;
+      background: linear-gradient(90deg,var(--accent), #1b63d3);
+      box-shadow: 0 8px 24px rgba(13,71,161,0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .status-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(13,71,161,0.3);
+    }
+
+    /* Enhanced navigation */
+    nav.topnav{
+      margin-top:16px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      background: rgba(255,255,255,0.75);
+      padding:8px;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(12,35,64,0.08);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(16px) saturate(180%);
+      position: sticky;
+      top: 20px;
+      z-index: 60;
+      transition: transform 280ms ease, opacity 260ms;
+    }
+    nav.topnav a{
+      color:var(--text, #0c2340);
+      text-decoration:none;
+      font-weight:600;
+      padding:10px 20px;
+      position:relative;
+      border-radius:10px;
+      transition: all 0.3s ease;
+    }
+    nav.topnav a:hover{ 
+      color:var(--accent);
+      background: rgba(13,71,161,0.06);
+    }
+    nav.topnav a.active { 
+      color:#fff;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    main{
+      margin-top:24px;
+      padding-bottom:60px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+    }
+
+    /* Enhanced cards */
+    .card{
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--card-radius);
+      padding:20px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.06),
+                  inset 0 1px 1px rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px) saturate(180%);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 12px 40px rgba(12,35,64,0.1),
+                  inset 0 1px 1px rgba(255,255,255,0.9);
+      transform: translateY(-2px);
+    }
+
+    .profile-block{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(13,71,161,0.1);
+      margin-bottom: 20px;
+    }
+    .avatar-large{
+      width:90px; 
+      height:90px; 
+      border-radius:16px;
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+      background: linear-gradient(135deg, rgba(13,71,161,0.12), rgba(122,92,255,0.08));
+      font-size:36px;
+      color:var(--accent);
+      box-shadow: 0 8px 24px rgba(13,71,161,0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .avatar-large:hover {
+      transform: scale(1.08) rotate(-5deg);
+    }
+    .welcome-title{
+      font-size:1.3rem; 
+      font-weight:700; 
+      color:var(--accent);
+      margin-bottom: 4px;
+    }
+    .meta-muted{
+      color:var(--muted); 
+      margin-top:6px; 
+      font-size:0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Enhanced stats grid */
+    .stats-grid{
+      display:grid;
+      grid-template-columns: repeat(2,1fr);
+      gap:14px;
+    }
+    .stat-tile{
+      background:rgba(255,255,255,0.95);
+      border-radius:12px;
+      padding:16px;
+      border:1px solid rgba(12,35,64,0.05);
+      box-shadow: 0 2px 8px rgba(12,35,64,0.04);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .stat-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(12,35,64,0.12);
+      border-color: var(--accent);
+    }
+    .stat-label{
+      color:var(--muted); 
+      font-size:13px;
+      font-weight: 600;
+    }
+    .stat-value{
+      font-weight:800; 
+      font-size:24px; 
+      margin-top:8px; 
+      color:var(--accent);
+      animation: countUp 1s ease;
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Chart section */
+    .chart-section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      border: 1px solid rgba(12,35,64,0.05);
+      box-shadow: 0 2px 8px rgba(12,35,64,0.04);
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    /* Enhanced tabs */
+    .tabs-bar{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .tab-btn{
+      padding:10px 18px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.95);
+      border:1px solid rgba(12,35,64,0.08);
+      font-weight:700;
+      cursor:pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .tab-btn:hover {
+      background: rgba(13,71,161,0.08);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .tab-btn.active{ 
+      background: linear-gradient(135deg,var(--accent), #1976d2); 
+      color:#fff;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    /* Enhanced controls */
+    .controls {
+      display:flex; 
+      gap:12px; 
+      margin: 16px 0 20px; 
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .controls input[type="text"]{
+      padding:12px 16px; 
+      border-radius:10px; 
+      border:1px solid rgba(12,35,64,0.1); 
+      flex:1;
+      min-width: 250px;
+      background: rgba(255,255,255,0.95);
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+    .controls input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13,71,161,0.1);
+    }
+    .controls select{ 
+      padding:12px 16px; 
+      border-radius:10px; 
+      border:1px solid rgba(12,35,64,0.1);
+      background: rgba(255,255,255,0.95);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+    .controls select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13,71,161,0.1);
+    }
+
+    /* Enhanced table */
+    .table-wrap{
+      background: rgba(255,255,255,0.9);
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(12,35,64,0.08);
+      box-shadow: 0 4px 16px rgba(12,35,64,0.06);
+    }
+    .table-container {
+      overflow-x: auto;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    table{ 
+      width:100%; 
+      border-collapse:collapse; 
+      min-width:900px;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(13,71,161,0.08), rgba(13,71,161,0.04));
+    }
+    thead th{ 
+      text-align:left; 
+      padding:14px 16px; 
+      font-size:13px; 
+      font-weight: 700;
+      color:var(--accent); 
+      border-bottom:2px solid rgba(12,35,64,0.08);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tbody tr {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    tbody tr:hover {
+      background: rgba(13,71,161,0.04);
+    }
+    tbody td{ 
+      padding:14px 16px; 
+      border-bottom:1px solid rgba(12,35,64,0.05); 
+      font-size:14px; 
+      color:#123;
+    }
+    .dept-chip{ 
+      display:inline-block; 
+      background: linear-gradient(135deg,rgba(13,71,161,0.12), rgba(122,92,255,0.08));
+      color:var(--accent); 
+      padding:6px 12px; 
+      border-radius:999px; 
+      font-weight:700;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(13,71,161,0.1);
+      transition: all 0.3s ease;
+    }
+    .dept-chip:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.2);
+    }
+
+    /* Enhanced buttons */
+    .action-btn{ 
+      padding:10px 16px; 
+      border-radius:10px; 
+      border:1px solid rgba(12,35,64,0.1); 
+      background:#fff; 
+      cursor:pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .action-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13,71,161,0.4);
+    }
+
+    .upload-label {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 16px;
+      border-radius:10px;
+      background:#fff;
+      border:1px solid rgba(12,35,64,0.1);
+      cursor:pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .upload-label:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    /* Enhanced modal */
+    .modal{ 
+      display:none; 
+      position:fixed; 
+      inset:0; 
+      background: rgba(8,12,20,0.6); 
+      backdrop-filter: blur(8px);
+      align-items:center; 
+      justify-content:center; 
+      z-index:120;
+      animation: fadeIn 0.3s ease;
+    }
+    .modal-inner{ 
+      width:92%; 
+      max-width:650px; 
+      background:#fff; 
+      padding:28px; 
+      border-radius:16px; 
+      box-shadow:0 20px 60px rgba(2,6,23,0.4);
+      animation: slideUp 0.4s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid rgba(12,35,64,0.1);
+    }
+    .modal-header h3 {
+      color: var(--accent);
+      font-size: 1.4rem;
+      margin: 0;
+    }
+
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(13,71,161,0.4);
+      z-index: 200;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(400px); }
+    }
+
+    .toast.success { background: linear-gradient(135deg, var(--success), #16a34a); }
+    .toast.warning { background: linear-gradient(135deg, var(--warning), #d97706); }
+    .toast.error { background: linear-gradient(135deg, var(--error), #dc2626); }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 16px;
+    }
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid rgba(12,35,64,0.1);
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      min-width: 40px;
+      text-align: center;
+    }
+    .page-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .page-btn.active {
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      border: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px){
+      .grid{ grid-template-columns:1fr; }
+      nav.topnav{ position: sticky; top: 12px; }
+      table{ min-width:600px }
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls input[type="text"],
+      .controls select {
+        width: 100%;
+      }
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .quick-action-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid rgba(12,35,64,0.05);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .quick-action-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(13,71,161,0.15);
+      border-color: var(--accent);
+    }
+    .quick-action-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .quick-action-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Activity Feed */
+    .activity-feed {
+      margin-top: 16px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(12,35,64,0.05);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(12,35,64,0.05);
+      transition: background 0.3s ease;
+    }
+    .activity-item:hover {
+      background: rgba(13,71,161,0.04);
+      border-radius: 8px;
+    }
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      background: linear-gradient(135deg, rgba(13,71,161,0.1), rgba(122,92,255,0.08));
+    }
+    .activity-content {
+      flex: 1;
+    }
+    .activity-text {
+      font-size: 0.9rem;
+      color: #123;
+      margin-bottom: 4px;
+    }
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(13,71,161,0.4);
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 12px 32px rgba(13,71,161,0.6);
+    }
+
+    /* Search overlay */
+    .search-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8,12,20,0.8);
+      backdrop-filter: blur(12px);
+      z-index: 150;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 100px;
+      animation: fadeIn 0.3s ease;
+    }
+    .search-overlay.active {
+      display: flex;
+    }
+    .search-box-large {
+      width: 90%;
+      max-width: 600px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .search-box-large input {
+      width: 100%;
+      padding: 16px;
+      font-size: 1.2rem;
+      border: 2px solid rgba(13,71,161,0.2);
+      border-radius: 12px;
+      outline: none;
+    }
+    .search-box-large input:focus {
+      border-color: var(--accent);
+    }
+    .search-results {
+      margin-top: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .search-result-item {
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .search-result-item:hover {
+      background: rgba(13,71,161,0.06);
+    }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 100px;
+      right: 32px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(12,35,64,0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 16px rgba(12,35,64,0.1);
+      transition: all 0.3s ease;
+      z-index: 90;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 24px rgba(12,35,64,0.2);
+    }
+
+    /* Dark mode styles */
+    body.dark-mode {
+      background: linear-gradient(180deg, #0f172a, #020617);
+      color: #e2e8f0;
+    }
+    body.dark-mode .card,
+    body.dark-mode header.app-header,
+    body.dark-mode nav.topnav,
+    body.dark-mode .table-wrap,
+    body.dark-mode .stat-tile,
+    body.dark-mode .chart-section,
+    body.dark-mode .quick-action-card,
+    body.dark-mode .activity-feed {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(148, 163, 184, 0.1);
+      color: #e2e8f0;
+    }
+    body.dark-mode thead {
+      background: linear-gradient(180deg, rgba(13,71,161,0.2), rgba(13,71,161,0.1));
+    }
+    body.dark-mode tbody td,
+    body.dark-mode .activity-text,
+    body.dark-mode .welcome-title,
+    body.dark-mode .uni-title {
+      color: #e2e8f0;
+    }
+    body.dark-mode .theme-toggle {
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 12px; }
+      header.app-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      .logo-box {
+        min-width: auto;
+      }
+      .uni-title {
+        font-size: 1rem;
+      }
+      .status-badge {
+        min-width: auto;
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .tabs-bar {
+        flex-direction: column;
+        width: 100%;
+      }
+      .tab-btn {
+        width: 100%;
+        text-align: center;
+      }
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+      .fab {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+      }
+      .theme-toggle {
+        top: auto;
+        bottom: 90px;
+        right: 20px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="logo-box">
+        <img src="logo.png" alt="College logo" onerror="this.style.opacity=0.35" />
+      </div>
+
+      <div class="uni-title">
+        <div style="font-size:1.4rem;font-weight:800;margin-bottom:4px">Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya</div>
+        <div style="font-size:0.85rem;color:var(--muted);font-weight:600">Department of Computer Science & Engineering</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Kanchipuram, Tamil Nadu</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div class="status-badge" id="statusBadge" onclick="toggleConnection()">
+          🔄 Checking data...
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);font-weight:600">
+          <span id="currentDate"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav id="topNav" class="topnav" aria-label="Main navigation">
+      <a href="main_v2.html" data-tab="home" class="active">🏠 Home</a>
+      <a href="Dashboard.html" data-tab="manage">📊 Dashboard</a>
+      <a href="Add.html" data-tab="add">➕ Add</a>
+      <a href="Settings.html" data-tab="settings">⚙️ Settings</a>
+    </nav>
+
+    <main>
+      <div class="grid">
+
+        <!-- LEFT: Welcome & Profile -->
+        <section class="card">
+          <div class="profile-block">
+            <div class="avatar-large">👋</div>
+            <div>
+              <div class="welcome-title">Welcome Sir</div>
+              <div class="meta-muted">Head of Department – Computer Science</div>
+              <div style="margin-top:12px">
+                <span style="display:inline-block;background:linear-gradient(135deg,rgba(13,71,161,0.12), rgba(122,92,255,0.08));padding:8px 14px;border-radius:999px;color:var(--accent);font-weight:700;box-shadow:0 2px 8px rgba(13,71,161,0.1)">
+                  EMP001
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-tile" title="Total number of departments">
+              <div class="stat-label">📚 Total Departments</div>
+              <div class="stat-value" id="stat-depts">—</div>
+            </div>
+            <div class="stat-tile" title="Total faculty members">
+              <div class="stat-label">👥 Total Faculty</div>
+              <div class="stat-value" id="stat-total">—</div>
+            </div>
+            <div class="stat-tile" title="Faculty on leave today">
+              <div class="stat-label">🏖️ On Leave Today</div>
+              <div class="stat-value" id="stat-leave">—</div>
+            </div>
+            <div class="stat-tile" title="Current time">
+              <div class="stat-label">🕐 Current Time</div>
+              <div class="stat-value" id="stat-time">--:--:--</div>
+            </div>
+          </div>
+
+          <!-- Chart Section -->
+          <div class="chart-section">
+            <div class="chart-title">📊 Department Distribution</div>
+            <canvas id="deptChart" height="200"></canvas>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="chart-section">
+            <div class="chart-title">📈 Weekly Attendance</div>
+            <canvas id="attendanceChart" height="180"></canvas>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <div class="quick-action-card" onclick="openAddModal()">
+              <div class="quick-action-icon">➕</div>
+              <div class="quick-action-label">Add Faculty</div>
+            </div>
+            <div class="quick-action-card" onclick="document.getElementById('uploadExcel').click()">
+              <div class="quick-action-icon">📤</div>
+              <div class="quick-action-label">Upload Data</div>
+            </div>
+            <div class="quick-action-card" onclick="document.getElementById('exportExcel').click()">
+              <div class="quick-action-icon">📥</div>
+              <div class="quick-action-label">Export Data</div>
+            </div>
+          </div>
+
+          <!-- Activity Feed -->
+          <div style="margin-top: 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="chart-title">📋 Recent Activity</div>
+              <button class="action-btn" style="font-size:0.8rem;padding:6px 12px" onclick="clearActivity()">Clear All</button>
+            </div>
+            <div class="activity-feed" id="activityFeed">
+              <div style="text-align:center;padding:20px;color:var(--muted)">
+                <div style="font-size:2rem;margin-bottom:8px">🔔</div>
+                <div>Activity will appear here</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: Tabs & Table -->
+        <section>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap;">
+            <div class="tabs-bar" role="tablist" aria-label="Sections">
+              <button class="tab-btn active" data-tab="manageTab">📋 Manage Staff</button>
+              <button class="tab-btn" data-tab="workTab">💼 Work Details</button>
+              <button class="tab-btn" data-tab="pubTab">📚 Publications</button>
+              <button class="tab-btn" data-tab="researchTab">🔬 Research</button>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <label class="upload-label">
+                📤 Upload Excel
+                <input id="uploadExcel" type="file" accept=".xlsx,.xls" style="display:none" />
+              </label>
+
+              <button id="exportExcel" class="action-btn" title="Export to Excel">
+                📥 Export
+              </button>
+
+              <button id="openAdd" class="action-btn btn-primary">
+                ➕ Add Professor
+              </button>
+            </div>
+          </div>
+
+          <!-- search / filter -->
+          <div class="controls">
+            <input type="text" id="globalSearch" placeholder="🔍 Search by name, department, designation..." />
+            <select id="deptFilter">
+              <option value="__all">All Departments</option>
+            </select>
+            <select id="sortBy">
+              <option value="name">Sort by Name</option>
+              <option value="dept">Sort by Department</option>
+              <option value="leaves">Sort by Leaves</option>
+            </select>
+          </div>
+
+          <!-- manage table -->
+          <div class="table-wrap card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Work Mail</th>
+                    <th>Leaves</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="staffBody">
+                  <!-- rows inserted here -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+          </div>
+
+        </section>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- modal (add / details) -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Professor</h3>
+        <button onclick="closeModal()" class="action-btn">✕ Close</button>
+      </div>
+
+      <form id="modalForm" style="display:grid;gap:12px">
+        <input name="Employee ID" required placeholder="Employee ID (EMP...)" />
+        <input name="Name" required placeholder="Full Name" />
+        <input name="Department" required placeholder="Department" />
+        <input name="Designation" required placeholder="Designation" />
+        <input name="Work mail" type="email" placeholder="Work Email" />
+        <input name="Leaves Taken" type="number" placeholder="Leaves Taken" value="0" />
+        <input name="Join Date" type="date" placeholder="Join Date" />
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button type="submit" class="action-btn btn-primary">💾 Save</button>
+        </div>
+      </form>
+
+      <div class="modal-content-body" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" onclick="toggleQuickSearch()" title="Quick Search (Press Ctrl+K)">
+    🔍
+  </button>
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+    <span id="themeIcon">🌙</span>
+  </button>
+
+  <!-- Quick Search Overlay -->
+  <div class="search-overlay" id="searchOverlay" onclick="closeQuickSearch(event)">
+    <div class="search-box-large" onclick="event.stopPropagation()">
+      <input type="text" id="quickSearchInput" placeholder="🔍 Quick search faculty..." autofocus />
+      <div class="search-results" id="quickSearchResults"></div>
+    </div>
+  </div>
+
+<script>
+/* ---------------------
+   Data Management
+   --------------------- */
+
+let dataSet = []; // array of objects used by UI
+let filteredData = [];
+let currentPage = 1;
+const itemsPerPage = 10;
+let deptChart = null;
+let attendanceChart = null;
+let activityLog = [];
+
+// Activity tracking
+function addActivity(icon, text) {
+  const activity = {
+    icon,
+    text,
+    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    timestamp: Date.now()
+  };
+  activityLog.unshift(activity);
+  if(activityLog.length > 20) activityLog.pop(); // Keep last 20
+  updateActivityFeed();
+}
+
+function updateActivityFeed() {
+  const feed = document.getElementById('activityFeed');
+  if(!activityLog.length) {
+    feed.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--muted)">
+        <div style="font-size:2rem;margin-bottom:8px">🔔</div>
+        <div>Activity will appear here</div>
+      </div>
+    `;
+    return;
+  }
+  
+  feed.innerHTML = activityLog.map(a => `
+    <div class="activity-item">
+      <div class="activity-icon">${a.icon}</div>
+      <div class="activity-content">
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function clearActivity() {
+  if(confirm('Clear all activity history?')) {
+    activityLog = [];
+    updateActivityFeed();
+    showToast("Activity cleared", "success");
+  }
+}
+
+// Update current date
+function updateDate() {
+  const now = new Date();
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+updateDate();
+setInterval(updateDate, 60000); // Update every minute
+
+// Try to connect to Supabase (placeholder)
+async function connectToSupabase() {
+  try {
+    // Replace this URL with your actual Supabase endpoint
+    const res = await fetch("https://your-supabase-url.supabase.co/rest/v1/faculty", {
+      headers: {
+        'apikey': 'your-api-key',
+        'Authorization': 'Bearer your-api-key'
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      dataSet = data.map((r, i) => normalizeRow(r, i));
+      setStatus("✅ Connected to Supabase", true);
+      showToast("✅ Data loaded from Supabase!", "success");
+      postLoad();
+      return true;
+    }
+    throw new Error("Connection failed");
+  } catch (err) {
+    console.log("Supabase connection failed, trying Excel fallback...");
+    setStatus("🔄 Connecting to Excel...", false);
+    return false;
+  }
+}
+
+function setStatus(text, good){
+  const el = document.getElementById('statusBadge');
+  el.textContent = text;
+  if(good){
+    el.style.background = "linear-gradient(90deg,var(--success), #16a34a)";
+    el.style.boxShadow = "0 8px 22px rgba(34,197,94,0.3)";
+  } else {
+    el.style.background = "linear-gradient(90deg,#6b7280, #4b5563)";
+    el.style.boxShadow = "0 8px 22px rgba(107,114,128,0.2)";
+  }
+}
+
+// Toggle connection
+function toggleConnection() {
+  const isOnline = document.getElementById('statusBadge').textContent.includes('Sample');
+  if(isOnline) {
+    setStatus("🔄 Attempting to connect...", false);
+    setTimeout(() => {
+      setStatus("📂 Using Sample Data", false);
+      showToast("Currently using sample data. Connect to Supabase for live data.", "warning");
+    }, 1000);
+  }
+}
+
+/* --------- parse Excel file into normalized objects --------- */
+function normalizeRow(r, index){
+  const get = (keys) => {
+    for(const k of keys){
+      if(r[k] !== undefined && r[k] !== null && r[k] !== '') return r[k];
+    }
+    return "";
+  };
+  return {
+    "Employee ID": get(["Employee ID","employeeId","EmployeeID","ID"]) || `EMP${1000+index}`,
+    "Name": get(["Name","name"]) || "",
+    "Department": get(["Department","department"]) || "",
+    "Designation": get(["Designation","designation"]) || "",
+    "Work mail": get(["Work mail","workEmail","Email","email"]) || "",
+    "Leaves Taken": Number(get(["Leaves Taken","Leaves","leaves"])) || 0,
+    "Join Date": get(["Join Date","join_date","JoinDate","Joined"]) || ""
+  };
+}
+
+async function loadExcelFallback(){
+  try {
+    showToast("📂 Loading data from Excel...", "warning");
+    // IMPORTANT: Put your Excel file (Dummy_data.xlsx) in the same folder as this HTML file
+    const res = await fetch("./Dummy_data.xlsx");
+    if(!res.ok) throw new Error("Excel file not found");
+    
+    const ab = await res.arrayBuffer();
+    const wb = XLSX.read(ab, {type:"array"});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval:""});
+    
+    if(rows.length === 0) {
+      throw new Error("Excel file is empty");
+    }
+    
+    dataSet = rows.map((r,i)=>normalizeRow(r,i));
+    setStatus("✅ Excel Data Loaded", true);
+    showToast(`✅ Loaded ${dataSet.length} records from Excel!`, "success");
+    postLoad();
+  } catch (err) {
+    console.error("Failed to load Excel file:", err);
+    setStatus("❌ No Data Source", false);
+    showToast("❌ Excel file not found! Please add 'Dummy_data.xlsx' in the same folder, or upload manually.", "error");
+    
+    // Show empty state
+    document.getElementById('staffBody').innerHTML = `
+      <tr><td colspan="7" style="text-align:center;padding:60px;color:#6b7280">
+        <div style="font-size:4rem;margin-bottom:16px">📂</div>
+        <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px;color:var(--accent)">No Data Found</div>
+        <div style="margin-bottom:20px">Please upload an Excel file or place 'Dummy_data.xlsx' in the same folder</div>
+        <label class="upload-label" style="display:inline-flex;cursor:pointer">
+          📤 Upload Excel File Now
+          <input type="file" accept=".xlsx,.xls" onchange="handleManualUpload(event)" style="display:none" />
+        </label>
+      </td></tr>
+    `;
+  }
+}
+
+// Helper for manual upload from empty state
+function handleManualUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      showToast("📤 Processing file...", "warning");
+      const ab = e.target.result;
+      const wb = XLSX.read(ab, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:""});
+      dataSet = rows.map((r,i)=>normalizeRow(r,i));
+      currentPage = 1;
+      postLoad();
+      showToast(`✅ Loaded ${dataSet.length} rows from ${file.name}`, "success");
+      addActivity("📤", `Uploaded ${dataSet.length} records from Excel`);
+    } catch(err) {
+      showToast("❌ Error reading file: " + err.message, "error");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ---------- Post load: populate UI ---------- */
+function postLoad(){
+  filteredData = dataSet.slice();
+  populateDeptFilter();
+  renderTable(filteredData);
+  renderStats();
+  renderCharts();
+}
+
+/* ---------- Render helpers ---------- */
+function renderStats(){
+  const depts = [...new Set(dataSet.map(d=>d["Department"]).filter(Boolean))];
+  document.getElementById('stat-depts').textContent = depts.length || 0;
+  document.getElementById('stat-total').textContent = dataSet.length || 0;
+  const onLeave = dataSet.filter(d=>Number(d["Leaves Taken"])>0).length;
+  document.getElementById('stat-leave').textContent = onLeave;
+}
+
+function renderTime(){
+  const now = new Date();
+  document.getElementById('stat-time').textContent = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+setInterval(renderTime,1000);
+renderTime();
+
+/* ---------- Charts ---------- */
+function renderCharts() {
+  // Department Distribution
+  const deptCounts = {};
+  dataSet.forEach(d => {
+    const dept = d["Department"] || "Unknown";
+    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+  });
+
+  const ctx1 = document.getElementById('deptChart');
+  if(deptChart) deptChart.destroy();
+  deptChart = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(deptCounts),
+      datasets: [{
+        data: Object.values(deptCounts),
+        backgroundColor: [
+          'rgba(13, 71, 161, 0.8)',
+          'rgba(25, 118, 210, 0.8)',
+          'rgba(122, 92, 255, 0.8)',
+          'rgba(99, 102, 241, 0.8)',
+          'rgba(139, 92, 246, 0.8)'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 10, font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  // Weekly Attendance
+  const ctx2 = document.getElementById('attendanceChart');
+  if(attendanceChart) attendanceChart.destroy();
+  attendanceChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      datasets: [{
+        label: 'Attendance %',
+        data: [95, 92, 88, 90, 87],
+        borderColor: 'rgba(13, 71, 161, 1)',
+        backgroundColor: 'rgba(13, 71, 161, 0.1)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { callback: value => value + '%' }
+        }
+      }
+    }
+  });
+}
+
+/* ---------- Table rendering with pagination ---------- */
+function rowHtml(r){
+  const eId = escapeHtml(r["Employee ID"]);
+  const name = escapeHtml(r["Name"]);
+  const dept = escapeHtml(r["Department"]);
+  const desig = escapeHtml(r["Designation"]);
+  const mail = escapeHtml(r["Work mail"] || "—");
+  const leaves = Number(r["Leaves Taken"])||0;
+  const leaveColor = leaves > 2 ? '#ef4444' : leaves > 0 ? '#f59e0b' : '#22c55e';
+  return `<tr onclick="viewDetails('${eId}')">
+    <td><strong>${eId}</strong></td>
+    <td>${name}</td>
+    <td><span class="dept-chip">${dept}</span></td>
+    <td>${desig}</td>
+    <td>${mail}</td>
+    <td style="color: ${leaveColor}; font-weight: 700">${leaves}</td>
+    <td><button class="action-btn" onclick="event.stopPropagation(); viewDetails('${eId}')">View</button></td>
+  </tr>`;
+}
+
+function renderTable(rows){
+  const body = document.getElementById('staffBody');
+  if(!rows || !rows.length){
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#6b7280">
+      <div style="font-size:3rem;margin-bottom:12px">📭</div>
+      <div style="font-size:1.1rem;font-weight:600">No records found</div>
+    </td></tr>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const pageData = rows.slice(start, end);
+  
+  body.innerHTML = pageData.map(rowHtml).join("");
+  renderPagination(rows.length);
+}
+
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const paginationEl = document.getElementById('pagination');
+  
+  if(totalPages <= 1) {
+    paginationEl.innerHTML = '';
+    return;
+  }
+
+  let html = `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+  
+  for(let i = 1; i <= totalPages; i++) {
+    if(i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    } else if(i === currentPage - 2 || i === currentPage + 2) {
+      html += `<span style="padding: 8px">...</span>`;
+    }
+  }
+  
+  html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+  paginationEl.innerHTML = html;
+}
+
+function changePage(page) {
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  if(page < 1 || page > totalPages) return;
+  currentPage = page;
+  renderTable(filteredData);
+  document.querySelector('.table-container').scrollTop = 0;
+}
+
+/* ---------- department filter ---------- */
+function populateDeptFilter(){
+  const sel = document.getElementById('deptFilter');
+  const depts = [...new Set(dataSet.map(d=>d["Department"]).filter(Boolean))].sort();
+  sel.innerHTML = `<option value="__all">All Departments (${dataSet.length})</option>` + 
+    depts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
+}
+
+/* ---------- search / filter / sort ---------- */
+document.getElementById('globalSearch').addEventListener('input', e=>{
+  currentPage = 1;
+  applyFilters();
+});
+
+document.getElementById('deptFilter').addEventListener('change', e=>{
+  currentPage = 1;
+  applyFilters();
+});
+
+document.getElementById('sortBy').addEventListener('change', e=>{
+  applyFilters();
+});
+
+function applyFilters(){
+  const q = document.getElementById('globalSearch').value.trim().toLowerCase();
+  const dept = document.getElementById('deptFilter').value;
+  const sort = document.getElementById('sortBy').value;
+  
+  let rows = dataSet.slice();
+  
+  if(dept && dept !== "__all") {
+    rows = rows.filter(r=> (r["Department"]||"").toString() === dept);
+  }
+  
+  if(q) {
+    rows = rows.filter(r => 
+      Object.values(r).some(v => String(v).toLowerCase().includes(q))
+    );
+  }
+  
+  // Sort
+  if(sort === 'name') {
+    rows.sort((a, b) => (a["Name"]||"").localeCompare(b["Name"]||""));
+  } else if(sort === 'dept') {
+    rows.sort((a, b) => (a["Department"]||"").localeCompare(b["Department"]||""));
+  } else if(sort === 'leaves') {
+    rows.sort((a, b) => (b["Leaves Taken"]||0) - (a["Leaves Taken"]||0));
+  }
+  
+  filteredData = rows;
+  renderTable(filteredData);
+}
+
+/* ---------- upload Excel input ---------- */
+document.getElementById('uploadExcel').addEventListener('change', async function(e){
+  const file = this.files[0];
+  if(!file) return;
+  
+  showToast("📤 Uploading and processing file...", "warning");
+  
+  try {
+    const ab = await file.arrayBuffer();
+    const wb = XLSX.read(ab, {type:'array'});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval:""});
+    dataSet = rows.map((r,i)=>normalizeRow(r,i));
+    currentPage = 1;
+    postLoad();
+    showToast(`✅ Loaded ${dataSet.length} rows from ${file.name}`, "success");
+  } catch(err) {
+    showToast("❌ Error reading file: " + err.message, "error");
+  }
+  
+  this.value = '';
+});
+
+/* ---------- export to Excel ---------- */
+document.getElementById('exportExcel').addEventListener('click', function(){
+  if(!dataSet.length) {
+    showToast("❌ No data to export", "error");
+    return;
+  }
+  
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(dataSet);
+  XLSX.utils.book_append_sheet(wb, ws, "Faculty Data");
+  XLSX.writeFile(wb, `Faculty_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast("✅ Data exported successfully!", "success");
+  addActivity("📥", `Exported ${dataSet.length} records to Excel`);
+});
+
+/* ---------- view details (modal) ---------- */
+function viewDetails(id){
+  const rec = dataSet.find(d=>d["Employee ID"] === id);
+  if(!rec) return showToast("❌ Record not found", "error");
+  
+  const modal = document.getElementById('modal');
+  const form = document.getElementById('modalForm');
+  const contentBody = modal.querySelector('.modal-content-body');
+  
+  form.style.display = 'none';
+  contentBody.style.display = 'block';
+  document.getElementById('modalTitle').textContent = 'Faculty Details';
+  
+  contentBody.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div style="grid-column:1/-1;text-align:center;padding:20px;background:linear-gradient(135deg,rgba(13,71,161,0.08), rgba(122,92,255,0.06));border-radius:12px">
+        <div style="font-size:3rem;margin-bottom:8px">👤</div>
+        <div style="font-size:1.3rem;font-weight:700;color:var(--accent)">${escapeHtml(rec["Name"])}</div>
+        <div style="color:var(--muted);margin-top:4px">${escapeHtml(rec["Designation"])}</div>
+      </div>
+      
+      <div style="padding:12px;background:rgba(255,255,255,0.5);border-radius:10px">
+        <strong style="color:var(--muted);font-size:0.85rem">Employee ID</strong>
+        <div style="margin-top:6px;font-weight:600">${escapeHtml(rec["Employee ID"])}</div>
+      </div>
+      
+      <div style="padding:12px;background:rgba(255,255,255,0.5);border-radius:10px">
+        <strong style="color:var(--muted);font-size:0.85rem">Joined</strong>
+        <div style="margin-top:6px;font-weight:600">${escapeHtml(rec["Join Date"]||'N/A')}</div>
+      </div>
+      
+      <div style="grid-column:1/-1;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px">
+        <strong style="color:var(--muted);font-size:0.85rem">Department</strong>
+        <div style="margin-top:6px"><span class="dept-chip">${escapeHtml(rec["Department"])}</span></div>
+      </div>
+      
+      <div style="grid-column:1/-1;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px">
+        <strong style="color:var(--muted);font-size:0.85rem">Work Email</strong>
+        <div style="margin-top:6px;font-weight:600">${escapeHtml(rec["Work mail"]||'—')}</div>
+      </div>
+      
+      <div style="padding:12px;background:rgba(255,255,255,0.5);border-radius:10px">
+        <strong style="color:var(--muted);font-size:0.85rem">Leaves Taken</strong>
+        <div style="margin-top:6px;font-weight:700;font-size:1.2rem;color:${Number(rec["Leaves Taken"]) > 2 ? '#ef4444' : '#22c55e'}">${escapeHtml(String(rec["Leaves Taken"]||0))}</div>
+      </div>
+      
+      <div style="grid-column:1/-1;padding:16px;background:linear-gradient(135deg,rgba(13,71,161,0.06), rgba(122,92,255,0.04));border-radius:10px;text-align:center">
+        <button class="action-btn btn-primary" onclick="editFaculty('${escapeHtml(rec["Employee ID"])}')">✏️ Edit Details</button>
+        <button class="action-btn" style="margin-left:8px;background:#ef4444;color:#fff;border:none" onclick="deleteFaculty('${escapeHtml(rec["Employee ID"])}')">🗑️ Delete</button>
+      </div>
+    </div>
+  `;
+  
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden','false');
+}
+
+function editFaculty(id) {
+  const rec = dataSet.find(d=>d["Employee ID"] === id);
+  if(!rec) return;
+  
+  closeModal();
+  setTimeout(() => {
+    openAddModal(rec);
+  }, 300);
+}
+
+function deleteFaculty(id) {
+  if(!confirm('Are you sure you want to delete this faculty member?')) return;
+  
+  const index = dataSet.findIndex(d=>d["Employee ID"] === id);
+  if(index > -1) {
+    const name = dataSet[index]["Name"];
+    dataSet.splice(index, 1);
+    currentPage = 1;
+    postLoad();
+    closeModal();
+    showToast("✅ Faculty member deleted successfully", "success");
+    addActivity("🗑️", `Deleted ${name} from records`);
+  }
+}
+
+/* ---------- modal helpers ---------- */
+function openAddModal(editData = null){
+  const modal = document.getElementById('modal');
+  const form = document.getElementById('modalForm');
+  const contentBody = modal.querySelector('.modal-content-body');
+  
+  form.style.display = 'grid';
+  contentBody.style.display = 'none';
+  form.reset();
+  
+  if(editData) {
+    document.getElementById('modalTitle').textContent = 'Edit Professor';
+    form.querySelector('[name="Employee ID"]').value = editData["Employee ID"];
+    form.querySelector('[name="Name"]').value = editData["Name"];
+    form.querySelector('[name="Department"]').value = editData["Department"];
+    form.querySelector('[name="Designation"]').value = editData["Designation"];
+    form.querySelector('[name="Work mail"]').value = editData["Work mail"] || '';
+    form.querySelector('[name="Leaves Taken"]').value = editData["Leaves Taken"] || 0;
+    form.querySelector('[name="Join Date"]').value = editData["Join Date"] || '';
+    form.querySelector('[name="Employee ID"]').readOnly = true;
+  } else {
+    document.getElementById('modalTitle').textContent = 'Add Professor';
+    form.querySelector('[name="Employee ID"]').readOnly = false;
+  }
+  
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden','false');
+}
+
+function closeModal(){
+  const modal = document.getElementById('modal');
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden','true');
+}
+
+/* ---------- add/edit professor ---------- */
+document.getElementById('openAdd').addEventListener('click', ()=>{
+  openAddModal();
+});
+
+document.getElementById('modalForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const fd = new FormData(this);
+  const obj = normalizeRow(Object.fromEntries(fd.entries()), dataSet.length);
+  
+  const existingIndex = dataSet.findIndex(d => d["Employee ID"] === obj["Employee ID"]);
+  
+  if(existingIndex > -1) {
+    // Update existing
+    dataSet[existingIndex] = obj;
+    showToast("✅ Faculty updated successfully!", "success");
+    addActivity("✏️", `Updated ${obj["Name"]}'s profile`);
+  } else {
+    // Add new
+    dataSet.unshift(obj);
+    showToast("✅ Faculty added successfully!", "success");
+    addActivity("➕", `Added new faculty: ${obj["Name"]}`);
+  }
+  
+  currentPage = 1;
+  postLoad();
+  closeModal();
+});
+
+/* ---------- toast notifications ---------- */
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  
+  toast.innerHTML = `<span style="font-size:1.2rem">${icons[type] || '📢'}</span><span>${message}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ---------- escape helper ---------- */
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- tabs (placeholder) ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tabName = btn.getAttribute('data-tab');
+    
+    // Show appropriate message based on tab
+    const messages = {
+      'workTab': '💼 Work Details section - Coming soon!',
+      'pubTab': '📚 Publications section - Coming soon!',
+      'researchTab': '🔬 Research section - Coming soon!'
+    };
+    
+    if(messages[tabName]) {
+      showToast(messages[tabName], 'warning');
+    }
+  });
+});
+
+/* ---------- Navigation links ---------- */
+document.querySelectorAll('nav.topnav a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('nav.topnav a').forEach(a => a.classList.remove('active'));
+    link.classList.add('active');
+    
+    const tab = link.getAttribute('data-tab');
+    const messages = {
+      'home': '🏠 Welcome to Faculty Dashboard',
+      'manage': '📊 Dashboard view',
+      'add': '➕ Opening Add Faculty form...',
+      'settings': '⚙️ Settings section - Coming soon!'
+    };
+    
+    if(tab === 'add') {
+      openAddModal();
+    } else if(messages[tab]) {
+      showToast(messages[tab], tab === 'settings' ? 'warning' : 'success');
+    }
+  });
+});
+
+/* ---------- nav scroll behavior ---------- */
+let lastScroll = window.scrollY;
+const nav = document.getElementById('topNav');
+window.addEventListener('scroll', ()=>{
+  const cur = window.scrollY;
+  if(cur > lastScroll && cur > 120){
+    nav.style.transform = 'translateY(-120%)';
+    nav.style.opacity = '0';
+  } else {
+    nav.style.transform = 'translateY(0)';
+    nav.style.opacity = '1';
+  }
+  lastScroll = cur;
+});
+
+/* ---------- Close modal on outside click ---------- */
+document.getElementById('modal').addEventListener('click', function(e) {
+  if(e.target === this) closeModal();
+});
+
+/* ---------- Dark Mode Toggle ---------- */
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', isDark);
+  showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled', 'success');
+}
+
+// Load saved theme preference
+if(localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark-mode');
+  document.getElementById('themeIcon').textContent = '☀️';
+}
+
+/* ---------- Quick Search ---------- */
+function toggleQuickSearch() {
+  const overlay = document.getElementById('searchOverlay');
+  overlay.classList.toggle('active');
+  if(overlay.classList.contains('active')) {
+    document.getElementById('quickSearchInput').focus();
+  } else {
+    document.getElementById('quickSearchInput').value = '';
+    document.getElementById('quickSearchResults').innerHTML = '';
+  }
+}
+
+function closeQuickSearch(event) {
+  if(event.target.id === 'searchOverlay') {
+    toggleQuickSearch();
+  }
+}
+
+// Quick search input handler
+document.getElementById('quickSearchInput').addEventListener('input', function(e) {
+  const query = e.target.value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('quickSearchResults');
+  
+  if(!query) {
+    resultsDiv.innerHTML = '';
+    return;
+  }
+  
+  const results = dataSet.filter(r => 
+    Object.values(r).some(v => String(v).toLowerCase().includes(query))
+  ).slice(0, 10);
+  
+  if(!results.length) {
+    resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">No results found</div>';
+    return;
+  }
+  
+  resultsDiv.innerHTML = results.map(r => `
+    <div class="search-result-item" onclick="viewDetailsFromSearch('${escapeHtml(r["Employee ID"])}')">
+      <div style="font-weight:600;color:var(--accent)">${escapeHtml(r["Name"])}</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-top:4px">
+        ${escapeHtml(r["Department"])} • ${escapeHtml(r["Designation"])}
+      </div>
+    </div>
+  `).join('');
+});
+
+function viewDetailsFromSearch(id) {
+  toggleQuickSearch();
+  setTimeout(() => viewDetails(id), 300);
+}
+
+// Keyboard shortcut: Ctrl+K for quick search
+document.addEventListener('keydown', function(e) {
+  if((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    toggleQuickSearch();
+  }
+  if(e.key === 'Escape') {
+    const overlay = document.getElementById('searchOverlay');
+    if(overlay.classList.contains('active')) {
+      toggleQuickSearch();
+    }
+  }
+});
+
+/* ---------- initialization ---------- */
+(async function init(){
+  showToast("🔄 Initializing dashboard...", "warning");
+  
+  // First try Supabase
+  const supabaseConnected = await connectToSupabase();
+  
+  // If Supabase fails, try Excel file
+  if(!supabaseConnected){
+    await loadExcelFallback();
+  }
+  
+  // Add welcome activity
+  setTimeout(() => {
+    addActivity("👋", "Welcome to Faculty Management Dashboard");
+  }, 1000);
+})();
+</script>
+</body>
+</html>

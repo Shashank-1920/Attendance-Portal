@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Add Faculty – SCSVMV Faculty Management</title>
+
+  <!-- XLSX (SheetJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      --accent:#0d47a1;
+      --accent-light:#1976d2;
+      --muted:#5b6b89;
+      --glass: rgba(255,255,255,0.85);
+      --bg-start:#f3f6fb;
+      --bg-end:#eaf2ff;
+      --card-radius:16px;
+      --max-width:1000px;
+      --success:#22c55e;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      color:#0c2340;
+      font-family: "Inter", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+      background-image: url('./GlassMorph3.png');
+      background-repeat: no-repeat;
+      background-position: center top;
+      background-size: cover;
+      -webkit-font-smoothing:antialiased;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(13,71,161,0.08) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .wrap{
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header.app-header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      background: rgba(255,255,255,0.75);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.08);
+      padding: 20px 24px;
+      margin-top: 20px;
+      backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.8);
+      animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-box{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      min-width: 240px;
+    }
+    .logo-box img{
+      width:88px;
+      height:88px;
+      object-fit:contain;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(13,71,161,0.12), rgba(122,92,255,0.08));
+      padding:10px;
+      box-shadow: 0 8px 20px rgba(13,71,161,0.08);
+    }
+    .uni-title{
+      flex:1;
+      text-align:center;
+    }
+    .uni-title h1{
+      font-size:1.4rem;
+      font-weight:800;
+      margin:0 0 4px 0;
+      color:var(--accent);
+    }
+    .uni-subtitle{
+      font-size:0.85rem;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    /* Navigation */
+    nav.topnav{
+      margin-top:16px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      background: rgba(255,255,255,0.75);
+      padding:8px;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(12,35,64,0.08);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(16px) saturate(180%);
+      position: sticky;
+      top: 20px;
+      z-index: 60;
+    }
+    nav.topnav a{
+      color:#0c2340;
+      text-decoration:none;
+      font-weight:600;
+      padding:10px 20px;
+      border-radius:10px;
+      transition: all 0.3s ease;
+    }
+    nav.topnav a:hover{ 
+      color:var(--accent);
+      background: rgba(13,71,161,0.06);
+    }
+    nav.topnav a.active { 
+      color:#fff;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    main{
+      margin-top:24px;
+      padding-bottom:60px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Card */
+    .card{
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--card-radius);
+      padding:32px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.06);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px) saturate(180%);
+      margin-bottom: 20px;
+    }
+
+    .page-title{
+      font-size:2rem;
+      font-weight:800;
+      color:var(--accent);
+      margin:0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-subtitle{
+      color:var(--muted);
+      font-size:1rem;
+      margin-bottom: 32px;
+    }
+
+    /* Form Styles */
+    .form-section{
+      margin-bottom: 32px;
+    }
+
+    .section-title{
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(13,71,161,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .form-group{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full-width{
+      grid-column: 1 / -1;
+    }
+
+    .form-label{
+      font-weight: 600;
+      color: #123;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .required{
+      color: var(--error);
+      font-size: 1.1rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea{
+      padding: 12px 16px;
+      border: 1px solid rgba(12,35,64,0.15);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.95);
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus{
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13,71,161,0.1);
+    }
+
+    .form-textarea{
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-input::placeholder{
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    /* File Upload */
+    .file-upload-area{
+      border: 2px dashed rgba(13,71,161,0.3);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      background: rgba(13,71,161,0.02);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .file-upload-area:hover{
+      border-color: var(--accent);
+      background: rgba(13,71,161,0.05);
+    }
+
+    .file-upload-area.dragover{
+      border-color: var(--accent);
+      background: rgba(13,71,161,0.1);
+    }
+
+    .upload-icon{
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .upload-text{
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .upload-hint{
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .file-preview{
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(34, 197, 94, 0.1);
+      border-radius: 8px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-preview.active{
+      display: flex;
+    }
+
+    .file-preview-icon{
+      font-size: 1.5rem;
+    }
+
+    .file-preview-name{
+      flex: 1;
+      font-weight: 600;
+      color: #123;
+    }
+
+    .file-preview-remove{
+      background: var(--error);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    /* Buttons */
+    .form-actions{
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 2px solid rgba(13,71,161,0.1);
+    }
+
+    .btn{
+      padding: 14px 28px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary{
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    .btn-primary:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13,71,161,0.4);
+    }
+
+    .btn-secondary{
+      background: rgba(12,35,64,0.08);
+      color: var(--accent);
+      border: 1px solid rgba(12,35,64,0.15);
+    }
+
+    .btn-secondary:hover{
+      background: rgba(12,35,64,0.12);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(13,71,161,0.4);
+      z-index: 200;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(400px); }
+    }
+
+    .toast.success { background: linear-gradient(135deg, var(--success), #16a34a); }
+    .toast.warning { background: linear-gradient(135deg, var(--warning), #d97706); }
+    .toast.error { background: linear-gradient(135deg, var(--error), #dc2626); }
+
+    /* Help Text */
+    .help-text{
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Character Counter */
+    .char-counter{
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px){
+      .form-grid{
+        grid-template-columns: 1fr;
+      }
+      .form-actions{
+        flex-direction: column;
+      }
+      .btn{
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="logo-box">
+        <img src="logo.png" alt="College logo" onerror="this.style.opacity=0.35" />
+      </div>
+
+      <div class="uni-title">
+        <h1>Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya</h1>
+        <div class="uni-subtitle">Faculty Management System</div>
+      </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="topnav">
+      <a href="Main_v3.html">🏠 Home</a>
+      <a href="Dashboard.html">📊 Dashboard</a>
+      <a href="Add.html" class="active">➕ Add</a>
+      <a href="Settings.html">⚙️ Settings</a>
+    </nav>
+
+    <main>
+      <div class="card">
+        <h2 class="page-title">➕ Add New Faculty Member</h2>
+        <p class="page-subtitle">Fill in the details below to add a new faculty member to the system</p>
+
+        <form id="facultyForm">
+          <!-- Personal Information -->
+          <div class="form-section">
+            <h3 class="section-title">👤 Personal Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  Employee ID <span class="required">*</span>
+                </label>
+                <input type="text" name="Employee ID" class="form-input" placeholder="e.g., EMP1001" required pattern="EMP[0-9]+" title="Must start with EMP followed by numbers" />
+                <span class="help-text">Format: EMP followed by numbers</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Full Name <span class="required">*</span>
+                </label>
+                <input type="text" name="Name" class="form-input" placeholder="e.g., Mr.Ravi" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Date of Birth <span class="required">*</span>
+                </label>
+                <input type="date" name="Date of Birth" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Gender <span class="required">*</span>
+                </label>
+                <select name="Gender" class="form-select" required>
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Phone Number <span class="required">*</span>
+                </label>
+                <input type="tel" name="Phone" class="form-input" placeholder="+91 98765 43210" required pattern="[+]?[0-9\s-()]+" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Personal Email
+                </label>
+                <input type="email" name="Personal Email" class="form-input" placeholder="faculty@example.com" />
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Address
+                </label>
+                <textarea name="Address" class="form-textarea" placeholder="Enter full address"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Professional Information -->
+          <div class="form-section">
+            <h3 class="section-title">💼 Professional Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  Department <span class="required">*</span>
+                </label>
+                <select name="Department" class="form-select" required>
+                  <option value="">Select Department</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Data Science">Data Science</option>
+                  <option value="AI & ML">AI & Machine Learning</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Cybersecurity">Cybersecurity</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Mechanical">Mechanical</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Designation <span class="required">*</span>
+                </label>
+                <select name="Designation" class="form-select" required>
+                  <option value="">Select Designation</option>
+                  <option value="Professor">Professor</option>
+                  <option value="Associate Professor">Associate Professor</option>
+                  <option value="Assistant Professor">Assistant Professor</option>
+                  <option value="Lecturer">Lecturer</option>
+                  <option value="Guest Faculty">Guest Faculty</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Work Email <span class="required">*</span>
+                </label>
+                <input type="email" name="Work mail" class="form-input" placeholder="faculty@scsvmv.edu.in" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Join Date <span class="required">*</span>
+                </label>
+                <input type="date" name="Join Date" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Qualification <span class="required">*</span>
+                </label>
+                <select name="Qualification" class="form-select" required>
+                  <option value="">Select Qualification</option>
+                  <option value="Ph.D">Ph.D</option>
+                  <option value="M.Tech">M.Tech</option>
+                  <option value="M.Sc">M.Sc</option>
+                  <option value="MBA">MBA</option>
+                  <option value="B.Tech">B.Tech</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Years of Experience
+                </label>
+                <input type="number" name="Experience" class="form-input" placeholder="e.g., 10" min="0" />
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Specialization
+                </label>
+                <input type="text" name="Specialization" class="form-input" placeholder="e.g., Machine Learning, Data Mining" />
+                <span class="help-text">Separate multiple specializations with commas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leave Information -->
+          <div class="form-section">
+            <h3 class="section-title">🏖️ Leave Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  Leaves Taken
+                </label>
+                <input type="number" name="Leaves Taken" class="form-input" placeholder="0" min="0" value="0" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Total Leave Balance
+                </label>
+                <input type="number" name="Leave Balance" class="form-input" placeholder="20" min="0" value="20" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="form-section">
+            <h3 class="section-title">📝 Additional Information</h3>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Research Interests
+                </label>
+                <textarea name="Research Interests" class="form-textarea" placeholder="Describe research areas of interest" maxlength="500" oninput="updateCharCount(this, 'researchCount')"></textarea>
+                <div class="char-counter"><span id="researchCount">0</span>/500</div>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Publications
+                </label>
+                <textarea name="Publications" class="form-textarea" placeholder="List key publications" maxlength="1000" oninput="updateCharCount(this, 'pubCount')"></textarea>
+                <div class="char-counter"><span id="pubCount">0</span>/1000</div>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">
+                  Notes
+                </label>
+                <textarea name="Notes" class="form-textarea" placeholder="Any additional notes or comments"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Upload -->
+          <div class="form-section">
+            <h3 class="section-title">📎 Document Upload</h3>
+            <div class="file-upload-area" id="uploadArea">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Click to upload or drag and drop</div>
+              <div class="upload-hint">PDF, DOC, DOCX (Max 5MB)</div>
+              <input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display:none" />
+            </div>
+            <div class="file-preview" id="filePreview">
+              <span class="file-preview-icon">📄</span>
+              <span class="file-preview-name" id="fileName"></span>
+              <button type="button" class="file-preview-remove" onclick="removeFile()">Remove</button>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+              🔄 Reset Form
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='Main_sample.html'">
+              ❌ Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              ✅ Add Faculty Member
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+  </div>
+
+<script>
+// File upload handling
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+let selectedFile = null;
+
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+  uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if(files.length > 0) handleFile(files[0]);
+});
+
+fileInput.addEventListener('change', (e) => {
+  if(e.target.files.length > 0) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if(file.size > maxSize) {
+    showToast('❌ File size must be less than 5MB', 'error');
+    return;
+  }
+  
+  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  if(!allowedTypes.includes(file.type)) {
+    showToast('❌ Only PDF and DOC files are allowed', 'error');
+    return;
+  }
+  
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  filePreview.classList.add('active');
+  showToast('✅ File uploaded successfully', 'success');
+}
+
+function removeFile() {
+  selectedFile = null;
+  fileInput.value = '';
+  filePreview.classList.remove('active');
+  showToast('File removed', 'warning');
+}
+
+// Character counter
+function updateCharCount(textarea, counterId) {
+  document.getElementById(counterId).textContent = textarea.value.length;
+}
+
+// Form submission
+document.getElementById('facultyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData.entries());
+  
+  // Simulate saving data
+  showToast('💾 Saving faculty data...', 'warning');
+  
+  setTimeout(() => {
+    // Here you would normally save to Excel or database
+    console.log('Faculty Data:', data);
+    if(selectedFile) {
+      console.log('Attached File:', selectedFile.name);
+    }
+    
+    showToast('✅ Faculty member added successfully!', 'success');
+    
+    // Redirect after 2 seconds
+    setTimeout(() => {
+      window.location.href = 'Main_sample.html';
+    }, 2000);
+  }, 1500);
+});
+
+// Reset form
+function resetForm() {
+  if(confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+    document.getElementById('facultyForm').reset();
+    removeFile();
+    document.getElementById('researchCount').textContent = '0';
+    document.getElementById('pubCount').textContent = '0';
+    showToast('Form reset successfully', 'warning');
+  }
+}
+
+// Toast notification
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  
+  toast.innerHTML = `<span style="font-size:1.2rem">${icons[type]}</span><span>${message}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Auto-generate Employee ID
+document.querySelector('[name="Name"]').addEventListener('blur', function() {
+  const empIdField = document.querySelector('[name="Employee ID"]');
+  if(!empIdField.value) {
+    const randomId = 'EMP' + Math.floor(1000 + Math.random() * 9000);
+    empIdField.value = randomId;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faculty Attendance Dashboard | SCSVMV</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --accent:#004aad; --accent-light:#e8f1ff;
+    --bg:#f7f9fb; --text:#0f172a; --muted:#64748b; --white:#fff;
+    --shadow:0 6px 18px rgba(0,0,0,.06); --radius:14px;
+    --present-bg:#e6f4ea; --present-text:#137333;
+    --absent-bg:#fce8e6; --absent-text:#b3261e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Poppins,system-ui,Arial;background:var(--bg);color:var(--text)}
+  nav{position:sticky;top:0;z-index:100;background:var(--white);box-shadow:var(--shadow);display:flex;justify-content:center;gap:30px;padding:14px 10px}
+  nav a{color:var(--text);text-decoration:none;font-weight:600} nav a:hover,nav a.active{color:var(--accent)}
+  header{text-align:center;padding:30px 20px 10px}
+  header h1{color:var(--accent);margin:10px 0} header p{color:var(--muted);font-size:14px}
+  .wrap{max-width:1150px;margin:0 auto;padding:0 16px 40px}
+
+  /* sketch layout */
+  .overview{display:flex;align-items:flex-start;justify-content:space-between;gap:25px;flex-wrap:wrap}
+  .stats-vertical{display:flex;flex-direction:column;gap:15px;width:220px}
+  .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;text-align:center;transition:.2s}
+  .card:hover{transform:translateY(-3px)}
+  .card h3{color:var(--muted);margin:0;font-size:14px}
+  .card p{margin:8px 0 0;font-size:26px;font-weight:700;color:var(--accent)}
+
+  .chart-box{flex:1;min-width:320px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);
+             padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .chart-wrap{width:260px;height:260px;display:flex;align-items:center;justify-content:center}
+  canvas{max-width:240px !important;max-height:240px !important}
+
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:25px 0}
+  select,input[type="search"]{padding:10px 14px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;font-family:Poppins}
+
+  .table-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .table-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #e5e7eb;background:var(--accent-light)}
+  .table-head h3{margin:0;color:var(--accent)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:14px 16px;border-bottom:1px solid #edf2f7;text-align:left}
+  th{background:var(--accent);color:#fff;font-weight:600;font-size:14px}
+  td{font-size:14px} tr:hover{background:#f8fbff;transition:.3s}
+  .badge{padding:5px 10px;border-radius:999px;font-weight:600;font-size:12px}
+  .present{background:var(--present-bg);color:var(--present-text)}
+  .absent{background:var(--absent-bg);color:var(--absent-text)}
+  .code{background:var(--accent-light);color:var(--accent);padding:4px 8px;border-radius:8px;font-weight:600}
+</style>
+</head>
+<body>
+<nav>
+  <a href="main_v3.html">Home</a>
+  <a href="Dashboard.html" class="active">Dashboard</a>
+  <a href="Manual_attendance.html">Attendance</a>
+  <a href="Analytics.html">Analytics</a>
+</nav>
+
+<header>
+  <img src="Logo_high res.png" alt="Logo" style="height:70px;object-fit:contain;">
+  <h1>Faculty Attendance Dashboard</h1>
+  <p>Auto-synced data | Updated: <span id="lastUpdated">--</span></p>
+</header>
+
+<section class="wrap">
+  <div class="overview">
+    <!-- left stacked boxes -->
+    <div class="stats-vertical">
+      <div class="card"><h3>Total Faculty</h3><p id="stTotal">--</p></div>
+      <div class="card"><h3>Present</h3><p id="stPresent">--</p></div>
+      <div class="card"><h3>Absent</h3><p id="stAbsent">--</p></div>
+    </div>
+    <!-- right pie -->
+    <div class="chart-box">
+      <div class="chart-wrap"><canvas id="attendanceChart"></canvas></div>
+      <small id="syncTime" style="color:var(--muted);margin-top:8px;font-size:13px">Data last synced at 10:00 AM</small>
+    </div>
+  </div>
+
+  <div class="controls">
+    <label><strong>Department:</strong></label>
+    <select id="deptSelect"></select>
+    <input id="searchInput" type="search" placeholder="Search by name or code…" />
+  </div>
+
+  <div class="table-card">
+    <div class="table-head">
+      <h3>Department Attendance</h3>
+      <span id="rangeInfo" style="font-size:13px;color:var(--muted)">--</span>
+    </div>
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee Code</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Total Punches</th>
+            <th>Last Punch</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="6" style="text-align:center;color:#64748b">Loading data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</body>
+<script>
+const baseURL = "http://localhost:5000";
+const csvFilePath = "29-10-2025.csv";
+let allData = [];
+let chart = null;
+const $ = id => document.getElementById(id);
+
+/* ========== CSV PARSER ========== */
+function parseCSV(text) {
+  const rows = text.trim().split(/\r?\n/);
+  const headers = rows.shift().split(",").map(h => h.trim());
+  return rows.map(r => {
+    const vals = r.split(",").map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, i) => (obj[h] = vals[i] || ""));
+    return obj;
+  });
+}
+
+/* ========== HELPERS ========== */
+function isTime(s) {
+  return /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/.test(String(s || ""));
+}
+
+/* 🧠 Extract & clean times properly */
+function extractTimes(raw) {
+  if (!raw) return [];
+  return String(raw)
+    .replace(/\s+/g, "")
+    .replace(/,+$/g, "") // remove trailing commas
+    .split(",")
+    .filter(isTime);
+}
+
+/* Normalize “present” vs “not present” */
+function cleanStatus(s) {
+  const t = String(s || "").toLowerCase().replace(/[^a-z]/g, "");
+  return {
+    hasPresent: t.includes("present"),
+    hasNotPresent: t.includes("notpresent")
+  };
+}
+
+/* ========== NORMALIZATION ========== */
+function normalize(r) {
+  const times = extractTimes(r.PunchRecords);
+  const totalPunches = times.length;
+
+  // pick proper first & last punches
+  let firstPunch = "--", lastPunch = "--";
+  if (totalPunches === 1) {
+    firstPunch = lastPunch = times[0];
+  } else if (totalPunches > 1) {
+    firstPunch = times[0];
+    lastPunch = times[times.length - 1];
+  }
+
+  const { hasPresent, hasNotPresent } = cleanStatus(r.Status);
+  const Present =
+    (hasPresent && !hasNotPresent) ||
+    totalPunches > 0 ||
+    isTime(r.LastPunch);
+
+  return {
+    EmployeeCode: r.EmployeeCode || "--",
+    EmployeeName: r.EmployeeName || "--",
+    Department: r.Department || "Unknown",
+    TotalPunches: totalPunches,
+    FirstPunch: firstPunch,
+    LastPunch: lastPunch,
+    Present
+  };
+}
+
+/* ========== FETCH SOURCES ========== */
+async function fetchSQL() {
+  try {
+    const res = await fetch(`${baseURL}/attendance/today`);
+    if (!res.ok) throw new Error("SQL unavailable");
+    console.log("✅ Loaded from SQL");
+    return await res.json();
+  } catch {
+    console.warn("⚠️ SQL unreachable, falling back to CSV");
+    return null;
+  }
+}
+
+async function fetchCSV() {
+  const res = await fetch(csvFilePath);
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+/* ========== MAIN LOAD ========== */
+async function loadData() {
+  let data = await fetchSQL();
+  if (!data) data = await fetchCSV();
+
+  allData = (data || []).map(normalize);
+  $("lastUpdated").textContent = new Date().toLocaleString();
+  $("syncTime").textContent = "Data last synced at 10:00 AM";
+
+  renderDepartments(allData);
+  renderTable();
+}
+
+/* ========== RENDERERS ========== */
+function renderDepartments(data) {
+  const depts = [...new Set(data.map(d => d.Department))].filter(Boolean).sort();
+  $("deptSelect").innerHTML = depts.map(d => `<option>${d}</option>`).join("");
+  $("deptSelect").addEventListener("change", renderTable);
+}
+
+function renderTable() {
+  const dept = $("deptSelect").value;
+  const search = $("searchInput").value.toLowerCase();
+
+  const filtered = allData.filter(
+    d =>
+      (!dept || d.Department === dept) &&
+      (d.EmployeeName.toLowerCase().includes(search) ||
+        String(d.EmployeeCode).includes(search))
+  );
+
+  const total = filtered.length;
+  const present = filtered.filter(d => d.Present).length;
+  const absent = total - present;
+
+  $("stTotal").textContent = total;
+  $("stPresent").textContent = present;
+  $("stAbsent").textContent = absent;
+  $("rangeInfo").textContent = `${total} records found`;
+
+  $("tbody").innerHTML =
+    filtered
+      .slice(0, 25)
+      .map(
+        d => `
+      <tr>
+        <td><span class="code">${d.EmployeeCode}</span></td>
+        <td>${d.EmployeeName}</td>
+        <td>${d.Department}</td>
+        <td>${d.TotalPunches}</td>
+        <td>${d.TotalPunches > 1 ? `${d.FirstPunch} — ${d.LastPunch}` : d.FirstPunch}</td>
+        <td><span class="badge ${
+          d.Present ? "present" : "absent"
+        }">${d.Present ? "Present" : "Absent"}</span></td>
+      </tr>`
+      )
+      .join("") ||
+    `<tr><td colspan="6" style="text-align:center;color:#64748b">No records found</td></tr>`;
+
+  renderChart(present, absent);
+}
+
+/* ========== PIE CHART ========== */
+function renderChart(present, absent) {
+  const ctx = document.getElementById("attendanceChart").getContext("2d");
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: ["Present", "Not Present"],
+      datasets: [
+        {
+          data: [present, absent],
+          backgroundColor: ["#1e88e5", "#ef5350"],
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+}
+
+/* ========== EVENT LISTENERS ========== */
+$("searchInput").addEventListener("input", renderTable);
+
+/* ========== INITIALIZE ========== */
+loadData();
+</script>
+
+</html>

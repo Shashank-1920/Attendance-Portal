@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Attendance Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --accent:#004aad; --accent-2:#1e88e5; --bg:#f7f9fb; --text:#0f172a; --muted:#64748b; --white:#fff;
+    --shadow:0 6px 18px rgba(0,0,0,.06); --radius:14px; --good:#e6f4ea; --goodt:#137333; --bad:#fce8e6; --badt:#b3261e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Poppins,system-ui,Arial;background:var(--bg);color:var(--text)}
+  header{
+    position:sticky;top:0;z-index:10;background:var(--white);box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px
+  }
+  header .brand{display:flex;align-items:center;gap:12px}
+  header img{height:48px;object-fit:contain}
+  header h1{margin:0;font-size:18px;color:var(--accent)}
+  header .now{color:var(--muted);font-size:13px}
+
+  .wrap{max-width:1200px;margin:22px auto;padding:0 16px 40px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:10px}
+  .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .stat h3{margin:0;color:var(--muted);font-size:13px}
+  .stat p{margin:6px 0 0;color:var(--accent);font-weight:700;font-size:26px}
+
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:20px 0}
+  .left-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  input[type="file"]{padding:10px;border:1px dashed #cbd5e1;border-radius:10px;background:#fff}
+  .hint{font-size:12px;color:var(--muted)}
+
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .full{grid-column:1 / -1}
+  .panel h3{margin:0 0 8px 0;color:var(--accent);font-size:16px}
+  canvas{width:100%;height:320px}
+
+  .btn{
+    padding:10px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:600;
+    display:inline-block;text-decoration:none;user-select:none;transition:0.2s ease-in-out;
+  }
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-outline{border:1px solid #cbd5e1;background:#fff;color:var(--accent)}
+  .btn:hover{opacity:0.9;transform:translateY(-1px)}
+
+  .badge{padding:5px 10px;border-radius:999px;font-weight:600;font-size:12px}
+  .present{background:var(--good);color:var(--goodt)}
+  .absent{background:var(--bad);color:var(--badt)}
+
+  .muted{color:var(--muted)}
+
+  @media (max-width:980px){
+    .stats{grid-template-columns:1fr 1fr}
+    .charts{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="Logo_high res.png" alt="Logo">
+    <div>
+      <h1>Attendance Analytics</h1>
+      <div class="now" id="now">--</div>
+    </div>
+  </div>
+  <button id="backBtn" class="btn btn-outline">← Back to Dashboard</button>
+</header>
+
+<main class="wrap">
+  <!-- STAT CARDS -->
+  <section class="stats">
+    <div class="card stat"><h3>Total Faculty</h3><p id="stTotal">--</p></div>
+    <div class="card stat"><h3>Total Days Analyzed</h3><p id="stDays">--</p></div>
+    <div class="card stat"><h3>Average Attendance %</h3><p id="stAvg">--</p></div>
+    <div class="card stat"><h3>Departments</h3><p id="stDepts">--</p></div>
+  </section>
+
+  <!-- CONTROLS -->
+  <section class="controls card">
+    <div class="left-controls">
+      <div>
+        <strong>Data Source:</strong>
+        <span id="src" class="badge present">SQL</span>
+      </div>
+      <div>
+        <input id="csvFiles" type="file" accept=".csv" multiple>
+        <div class="hint">Upload daily CSVs (optional; used when SQL is offline)</div>
+      </div>
+    </div>
+    <div class="muted">Updated: <span id="lastUpdated">--</span></div>
+  </section>
+
+  <!-- CHARTS -->
+  <section class="charts">
+    <div class="card panel">
+      <h3>Overall Attendance Ratio</h3>
+      <canvas id="pieOverall"></canvas>
+    </div>
+    <div class="card panel">
+      <h3>Department-wise Average Attendance</h3>
+      <canvas id="barDept"></canvas>
+    </div>
+    <div class="card panel full">
+      <h3>Daily Attendance Trend</h3>
+      <canvas id="lineTrend"></canvas>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- CONFIG ---------- */
+const API_BASE = "http://localhost:5000"; // SQL first
+const $ = id => document.getElementById(id);
+
+/* ---------- CLOCK + NAV ---------- */
+function nowTick(){ $("now").textContent = new Date().toLocaleString(); }
+setInterval(nowTick, 1000); nowTick();
+document.getElementById("backBtn").addEventListener("click", ()=>{ window.location.href = "main_v3.html"; });
+
+/* ---------- CSV PARSER (robust for simple files) ---------- */
+function parseCSV(text){
+  const rows = text.trim().split(/\r?\n/);
+  if(!rows.length) return [];
+  // simple header split (no embedded commas expected in your files)
+  const headers = rows[0].split(",").map(s=>s.trim());
+  return rows.slice(1).filter(Boolean).map(line=>{
+    const cells = line.split(",").map(s=>s.trim());
+    const o={}; headers.forEach((h,i)=> o[h]=cells[i]??""); return o;
+  });
+}
+
+/* ---------- DATA SHAPES ---------- */
+/*
+We expect unified records with fields:
+{ EmployeeCode, EmployeeName, Department, Date, In, Out, Status }
+*/
+
+function normalizeStatus(s, inVal, outVal){
+  const t = String(s||"").toLowerCase();
+  if(t.includes("not present")) return "Absent";
+  if(t.includes("present")) return "Present";
+  // heuristic: any time in In/Out means present
+  if(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/.test(inVal||"") || /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/.test(outVal||"")) return "Present";
+  return "Absent";
+}
+
+/* ---------- MERGE & AGGREGATE ---------- */
+function mergeRecords(list){
+  // Remove empty rows and normalize fields
+  const rows = list.map(r=>({
+    EmployeeCode: r.EmployeeCode || r.empCode || r.ID || "",
+    EmployeeName: r.EmployeeName || r.Name || "",
+    Department:   r.Department || r.Dept || "",
+    Date:         r.Date || r.date || "",
+    In:           r.In || r.in || "",
+    Out:          r.Out || r.out || "",
+    Status:       normalizeStatus(r.Status, r.In, r.Out)
+  })).filter(r=> r.EmployeeCode && r.Date);
+
+  // Optional: dedupe by EmployeeCode+Date (keep one; prefer one with a Status)
+  const key = r => `${r.EmployeeCode}__${r.Date}`;
+  const map = new Map();
+  for(const r of rows){
+    const k = key(r);
+    if(!map.has(k)) map.set(k, r);
+    else {
+      const existing = map.get(k);
+      // if new has explicit present/absent and old didn't, replace
+      if(existing.Status==="Absent" && r.Status==="Present") map.set(k, r);
+      // else keep the first
+    }
+  }
+  return [...map.values()];
+}
+
+function aggregateAll(records){
+  const uniqueFaculty = new Set(records.map(r=>r.EmployeeCode));
+  const days = new Set(records.map(r=>r.Date));
+  const depts = new Set(records.map(r=>r.Department).filter(Boolean));
+
+  // Overall present/absent
+  let present = 0, total = 0;
+  records.forEach(r => { total++; if(r.Status==="Present") present++; });
+
+  // Department-wise averages (overall present/total per dept)
+  const deptMap = new Map();
+  records.forEach(r=>{
+    if(!deptMap.has(r.Department)) deptMap.set(r.Department, {present:0,total:0});
+    const obj = deptMap.get(r.Department);
+    obj.total++; if(r.Status==="Present") obj.present++;
+  });
+  const deptLabels = [...deptMap.keys()].sort();
+  const deptPct = deptLabels.map(d=>{
+    const x = deptMap.get(d); return x.total ? Math.round((x.present/x.total)*100) : 0;
+  });
+
+  // Daily trend: average attendance per day (present/total per day)
+  const dayMap = new Map();
+  records.forEach(r=>{
+    if(!dayMap.has(r.Date)) dayMap.set(r.Date, {present:0,total:0});
+    const o = dayMap.get(r.Date);
+    o.total++; if(r.Status==="Present") o.present++;
+  });
+  const dayLabels = [...dayMap.keys()].sort((a,b)=> new Date(a)-new Date(b));
+  const dayPct = dayLabels.map(d=>{
+    const x = dayMap.get(d); return x.total ? Math.round((x.present/x.total)*100) : 0;
+  });
+
+  const avgAttendance = total ? Math.round((present/total)*100) : 0;
+
+  return {
+    meta: {
+      facultyCount: uniqueFaculty.size,
+      dayCount: days.size,
+      deptCount: depts.size,
+      avgAttendance,
+      present, absent: total - present
+    },
+    dept: { labels: deptLabels, pct: deptPct },
+    trend: { labels: dayLabels, pct: dayPct }
+  };
+}
+
+/* ---------- CHARTS ---------- */
+let pie=null, bar=null, line=null;
+function renderCharts(agg){
+  // Pie
+  const pieCtx = document.getElementById("pieOverall").getContext("2d");
+  if(pie) pie.destroy();
+  pie = new Chart(pieCtx, {
+    type:"pie",
+    data:{
+      labels:["Present","Absent"],
+      datasets:[{ data:[agg.meta.present, agg.meta.absent], backgroundColor:["#1e88e5","#ef5350"], borderWidth:1 }]
+    },
+    options:{ plugins:{ legend:{ position:"bottom" }}, responsive:true }
+  });
+
+  // Bar (dept)
+  const barCtx = document.getElementById("barDept").getContext("2d");
+  if(bar) bar.destroy();
+  bar = new Chart(barCtx, {
+    type:"bar",
+    data:{
+      labels: agg.dept.labels,
+      datasets:[{ label:"Avg Attendance %", data: agg.dept.pct }]
+    },
+    options:{
+      scales:{ y:{ beginAtZero:true, max:100, ticks:{ stepSize:20 } }, x:{ ticks:{ autoSkip:false, maxRotation:45, minRotation:0 } } },
+      plugins:{ legend:{ display:false } },
+      responsive:true
+    }
+  });
+
+  // Line (trend)
+  const lineCtx = document.getElementById("lineTrend").getContext("2d");
+  if(line) line.destroy();
+  line = new Chart(lineCtx, {
+    type:"line",
+    data:{
+      labels: agg.trend.labels.map(d=> new Date(d).toLocaleDateString()),
+      datasets:[{
+        label:"Average Attendance %",
+        data: agg.trend.pct,
+        tension:.3,
+        borderColor:"#1e88e5",
+        backgroundColor:"rgba(30,136,229,.15)",
+        fill:true,
+        pointRadius:3
+      }]
+    },
+    options:{
+      plugins:{ legend:{ display:false }},
+      scales:{ y:{ beginAtZero:true, max:100, ticks:{ stepSize:20 }}, x:{ grid:{ display:false }}},
+      responsive:true
+    }
+  });
+}
+
+/* ---------- RENDER STAT CARDS ---------- */
+function renderStats(agg){
+  $("stTotal").textContent = agg.meta.facultyCount;
+  $("stDays").textContent  = agg.meta.dayCount;
+  $("stAvg").textContent   = `${agg.meta.avgAttendance}%`;
+  $("stDepts").textContent = agg.meta.deptCount;
+  $("lastUpdated").textContent = new Date().toLocaleString();
+}
+
+/* ---------- LOADERS: SQL → CSV (multi-file) ---------- */
+async function fetchSQL(){
+  try{
+    const r = await fetch(`${API_BASE}/analytics/summary`);
+    if(!r.ok) throw 0;
+    // Expect array of normalized rows; if backend returns aggregated, adjust as needed.
+    return await r.json(); // [{EmployeeCode,EmployeeName,Department,Date,In,Out,Status}, ...]
+  }catch{ return null; }
+}
+
+async function filesToRecords(files){
+  const all = [];
+  for(const file of files){
+    const text = await file.text();
+    const rows = parseCSV(text);
+    all.push(...rows);
+  }
+  return all;
+}
+
+/* ---------- INIT ---------- */
+(async function init(){
+  // Try SQL
+  let rows = await fetchSQL();
+  if(rows && rows.length){
+    $("src").textContent = "SQL";
+    $("src").className = "badge present";
+  } else {
+    $("src").textContent = "CSV Upload";
+    $("src").className = "badge absent";
+  }
+
+  // If SQL failed, listen for file uploads
+  const csvInput = $("csvFiles");
+  if(!rows || !rows.length){
+    csvInput.addEventListener("change", async(e)=>{
+      const files = [...e.target.files];
+      if(!files.length) return;
+      const parsed = await filesToRecords(files);
+      const merged = mergeRecords(parsed);
+      const agg = aggregateAll(merged);
+      renderStats(agg); renderCharts(agg);
+    });
+    return; // wait for uploads
+  }
+
+  // SQL path
+  const merged = mergeRecords(rows);
+  const agg = aggregateAll(merged);
+  renderStats(agg); renderCharts(agg);
+})();
+</script>
+</body>
+</html>

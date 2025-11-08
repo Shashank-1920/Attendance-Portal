@@ -1,0 +1,6 @@
+Database: Amigos
+Password: SCSVMV123*
+
+supabase url:https://trfdedlpsuqsaznazbjt.supabase.co
+
+anon:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyZmRlZGxwc3Vxc2F6bmF6Ymp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwMjc1ODEsImV4cCI6MjA3NTYwMzU4MX0.aKGZ5EcRx1a8wfUVcCfOV9yb-iaU_N1dgm9J05e8-cE

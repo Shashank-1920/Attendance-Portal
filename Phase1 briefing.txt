@@ -1,0 +1,36 @@
+Phase 1-Web app
+
+Members:
+1)Vangmaya
+2)Sathwik
+3)Shashank
+_________________________
+Our role is to make a web app version of the project. The tech stack of this phase have been aldready mentioned in the project brief but still if any clarification is required feel free to contact me. 
+
+Core features:
+1)Search and filter->Find a professor by ID, name etc
+2)Profile View-> Show all details,remarks etc. more like a mini CV
+3)Attendence and timing-> show in time, out time
+4)sorting->By salary,performance,join date etc
+5)Autentication->a part of the data set (like Salary) would be masked upto a certain level.
+
+Except the autentication part we will work on all other core features in the initial stages. *The above list of core features is not the final list and can be changed based on the future circumstances. 
+______________________________________
+Individual roles:
+Shashank:
+>Finalize UI/UX design .
+>Build Responsive HTML,CSS and JS structures for the Keypages.
+>Once the Supabase endpoints(database) is ready,integrate it into the frontend.
+
+Vangmaya:
+>Work as support in frontend devlopment
+>Implement charts/graphs {if needed}
+>Test the UI,report bugs and help in solving them
+
+Sathwik:
+>Set up a Supabase project (database)
+>create API endpoints to access the data
+>Ensure date security
+_________________________________________
+
+

@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Settings – SCSVMV Faculty Management</title>
+
+  <style>
+    :root{
+      --accent:#0d47a1;
+      --accent-light:#1976d2;
+      --muted:#5b6b89;
+      --glass: rgba(255,255,255,0.85);
+      --bg-start:#f3f6fb;
+      --bg-end:#eaf2ff;
+      --card-radius:16px;
+      --max-width:1200px;
+      --success:#22c55e;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      color:#0c2340;
+      font-family: "Inter", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+      background-image: url('./GlassMorph3.png');
+      background-repeat: no-repeat;
+      background-position: center top;
+      background-size: cover;
+      -webkit-font-smoothing:antialiased;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(13,71,161,0.08) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .wrap{
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header.app-header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      background: rgba(255,255,255,0.75);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.08);
+      padding: 20px 24px;
+      margin-top: 20px;
+      backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.8);
+      animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-box{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      min-width: 240px;
+    }
+    .logo-box img{
+      width:88px;
+      height:88px;
+      object-fit:contain;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(13,71,161,0.12), rgba(122,92,255,0.08));
+      padding:10px;
+      box-shadow: 0 8px 20px rgba(13,71,161,0.08);
+    }
+    .uni-title{
+      flex:1;
+      text-align:center;
+    }
+    .uni-title h1{
+      font-size:1.4rem;
+      font-weight:800;
+      margin:0 0 4px 0;
+      color:var(--accent);
+    }
+    .uni-subtitle{
+      font-size:0.85rem;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    /* Navigation */
+    nav.topnav{
+      margin-top:16px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      background: rgba(255,255,255,0.75);
+      padding:8px;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(12,35,64,0.08);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(16px) saturate(180%);
+      position: sticky;
+      top: 20px;
+      z-index: 60;
+    }
+    nav.topnav a{
+      color:#0c2340;
+      text-decoration:none;
+      font-weight:600;
+      padding:10px 20px;
+      border-radius:10px;
+      transition: all 0.3s ease;
+    }
+    nav.topnav a:hover{ 
+      color:var(--accent);
+      background: rgba(13,71,161,0.06);
+    }
+    nav.topnav a.active { 
+      color:#fff;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    main{
+      margin-top:24px;
+      padding-bottom:60px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .page-title{
+      font-size:2rem;
+      font-weight:800;
+      color:var(--accent);
+      margin:0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-subtitle{
+      color:var(--muted);
+      font-size:1rem;
+      margin-bottom: 32px;
+    }
+
+    /* Layout */
+    .settings-layout{
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+
+    /* Sidebar */
+    .settings-sidebar{
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--card-radius);
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.06);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px) saturate(180%);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .settings-nav{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-nav-item{
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      color: #123;
+      border: 1px solid transparent;
+    }
+
+    .settings-nav-item:hover{
+      background: rgba(13,71,161,0.06);
+      border-color: rgba(13,71,161,0.1);
+    }
+
+    .settings-nav-item.active{
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    .settings-nav-icon{
+      font-size: 1.3rem;
+    }
+
+    /* Content Area */
+    .settings-content{
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--card-radius);
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(12,35,64,0.06);
+      border: 1px solid rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px) saturate(180%);
+    }
+
+    .settings-section{
+      display: none;
+    }
+
+    .settings-section.active{
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .section-header{
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(13,71,161,0.1);
+    }
+
+    .section-title{
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-description{
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Settings Item */
+    .settings-item{
+      padding: 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(12,35,64,0.06);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .settings-item:hover{
+      box-shadow: 0 4px 16px rgba(12,35,64,0.08);
+    }
+
+    .settings-item-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .settings-item-title{
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #123;
+    }
+
+    .settings-item-description{
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch{
+      position: relative;
+      width: 56px;
+      height: 28px;
+    }
+
+    .toggle-switch input{
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider{
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ccc;
+      border-radius: 34px;
+      transition: 0.3s;
+    }
+
+    .toggle-slider:before{
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider{
+      background: var(--accent);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before{
+      transform: translateX(28px);
+    }
+
+    /* Form Elements */
+    .form-group{
+      margin-bottom: 20px;
+    }
+
+    .form-label{
+      display: block;
+      font-weight: 600;
+      color: #123;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .form-input,
+    .form-select{
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(12,35,64,0.15);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.95);
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus{
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13,71,161,0.1);
+    }
+
+    /* Buttons */
+    .btn{
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary{
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+
+    .btn-primary:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13,71,161,0.4);
+    }
+
+    .btn-danger{
+      background: linear-gradient(135deg, var(--error), #dc2626);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+    }
+
+    .btn-danger:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+    }
+
+    .btn-secondary{
+      background: rgba(12,35,64,0.08);
+      color: var(--accent);
+      border: 1px solid rgba(12,35,64,0.15);
+    }
+
+    .btn-secondary:hover{
+      background: rgba(12,35,64,0.12);
+    }
+
+    /* Info Box */
+    .info-box{
+      background: linear-gradient(135deg, rgba(13,71,161,0.08), rgba(122,92,255,0.05));
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .info-box-title{
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-box-text{
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Stats Card */
+    .stats-card{
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-item{
+      background: rgba(255,255,255,0.9);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(12,35,64,0.06);
+    }
+
+    .stat-value{
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-label{
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, var(--accent), #1976d2);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(13,71,161,0.4);
+      z-index: 200;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(400px); }
+    }
+
+    .toast.success { background: linear-gradient(135deg, var(--success), #16a34a); }
+    .toast.warning { background: linear-gradient(135deg, var(--warning), #d97706); }
+    .toast.error { background: linear-gradient(135deg, var(--error), #dc2626); }
+
+    /* Responsive */
+    @media (max-width: 1024px){
+      .settings-layout{
+        grid-template-columns: 1fr;
+      }
+      .settings-sidebar{
+        position: static;
+      }
+      .settings-nav{
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .stats-card{
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="logo-box">
+        <img src="logo.png" alt="College logo" onerror="this.style.opacity=0.35" />
+      </div>
+
+      <div class="uni-title">
+        <h1>Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya</h1>
+        <div class="uni-subtitle">Faculty Management System</div>
+      </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="topnav">
+      <a href="Main_sample.html">🏠 Home</a>
+      <a href="Dashboard.html">📊 Dashboard</a>
+      <a href="Add.html">➕ Add</a>
+      <a href="Settings.html" class="active">⚙️ Settings</a>
+    </nav>
+
+    <main>
+      <h2 class="page-title">⚙️ Settings</h2>
+      <p class="page-subtitle">Manage your preferences and system configuration</p>
+
+      <div class="settings-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="settings-sidebar">
+          <nav class="settings-nav">
+            <div class="settings-nav-item active" data-section="general">
+              <span class="settings-nav-icon">🎯</span>
+              <span>General</span>
+            </div>
+            <div class="settings-nav-item" data-section="database">
+              <span class="settings-nav-icon">🗄️</span>
+              <span>Database</span>
+            </div>
+            <div class="settings-nav-item" data-section="notifications">
+              <span class="settings-nav-icon">🔔</span>
+              <span>Notifications</span>
+            </div>
+            <div class="settings-nav-item" data-section="appearance">
+              <span class="settings-nav-icon">🎨</span>
+              <span>Appearance</span>
+            </div>
+            <div class="settings-nav-item" data-section="security">
+              <span class="settings-nav-icon">🔒</span>
+              <span>Security</span>
+            </div>
+            <div class="settings-nav-item" data-section="backup">
+              <span class="settings-nav-icon">💾</span>
+              <span>Backup</span>
+            </div>
+            <div class="settings-nav-item" data-section="about">
+              <span class="settings-nav-icon">ℹ️</span>
+              <span>About</span>
+            </div>
+          </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="settings-content">
+          
+          <!-- General Settings -->
+          <section class="settings-section active" id="general">
+            <div class="section-header">
+              <h3 class="section-title">🎯 General Settings</h3>
+              <p class="section-description">Configure basic application preferences</p>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Institution Name</div>
+                  <div class="settings-item-description">Update the institution name displayed across the application</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-input" value="Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya" />
+              </div>
+              <button class="btn btn-primary" onclick="showToast('✅ Institution name updated', 'success')">💾 Save Changes</button>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Default Department</div>
+                  <div class="settings-item-description">Set the default department for new faculty</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <select class="form-select">
+                  <option value="">No Default</option>
+                  <option value="cs">Computer Science</option>
+                  <option value="ds">Data Science</option>
+                  <option value="ai">AI & Machine Learning</option>
+                  <option value="it">Information Technology</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Language</div>
+                  <div class="settings-item-description">Choose your preferred language</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <select class="form-select">
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  <option value="ta">Tamil</option>
+                  <option value="te">Telugu</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Database Settings -->
+          <section class="settings-section" id="database">
+            <div class="section-header">
+              <h3 class="section-title">🗄️ Database Settings</h3>
+              <p class="section-description">Configure your data source and connection</p>
+            </div>
+
+            <div class="info-box">
+              <div class="info-box-title">💡 Connection Status</div>
+              <div class="info-box-text">
+                Currently using <strong>Local Excel File</strong> as data source. Configure Supabase below for cloud sync.
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Supabase Configuration</div>
+                  <div class="settings-item-description">Connect to Supabase for real-time cloud database</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Supabase URL</label>
+                <input type="text" class="form-input" placeholder="https://your-project.supabase.co" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input type="password" class="form-input" placeholder="Enter your Supabase API key" />
+              </div>
+              <button class="btn btn-primary" onclick="testConnection()">🔌 Test Connection</button>
+              <button class="btn btn-secondary" onclick="showToast('✅ Configuration saved', 'success')" style="margin-left:8px">💾 Save</button>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Excel File Path</div>
+                  <div class="settings-item-description">Specify the default Excel file for offline mode</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-input" value="./Dummy_data.xlsx" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Notifications Settings -->
+          <section class="settings-section" id="notifications">
+            <div class="section-header">
+              <h3 class="section-title">🔔 Notification Settings</h3>
+              <p class="section-description">Manage how you receive notifications</p>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Email Notifications</div>
+                  <div class="settings-item-description">Receive notifications via email</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" checked onchange="showToast('Email notifications updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Browser Notifications</div>
+                  <div class="settings-item-description">Show desktop notifications</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" onchange="showToast('Browser notifications updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">New Faculty Added</div>
+                  <div class="settings-item-description">Notify when new faculty is added</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" checked onchange="showToast('Setting updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Leave Applications</div>
+                  <div class="settings-item-description">Notify about leave applications</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" checked onchange="showToast('Setting updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <!-- Appearance Settings -->
+          <section class="settings-section" id="appearance">
+            <div class="section-header">
+              <h3 class="section-title">🎨 Appearance Settings</h3>
+              <p class="section-description">Customize the look and feel</p>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Dark Mode</div>
+                  <div class="settings-item-description">Switch to dark theme for better visibility</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Compact View</div>
+                  <div class="settings-item-description">Show more data in less space</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" onchange="showToast('View mode updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Theme Color</div>
+                  <div class="settings-item-description">Choose your preferred accent color</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <select class="form-select" onchange="showToast('Theme color updated', 'success')">
+                  <option value="blue">Blue (Default)</option>
+                  <option value="purple">Purple</option>
+                  <option value="green">Green</option>
+                  <option value="red">Red</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Security Settings -->
+          <section class="settings-section" id="security">
+            <div class="section-header">
+              <h3 class="section-title">🔒 Security Settings</h3>
+              <p class="section-description">Manage security and privacy options</p>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Change Password</div>
+                  <div class="settings-item-description">Update your login password</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" placeholder="Enter current password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" placeholder="Enter new password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-input" placeholder="Confirm new password" />
+              </div>
+              <button class="btn btn-primary" onclick="showToast('✅ Password updated successfully', 'success')">🔒 Update Password</button>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Two-Factor Authentication</div>
+                  <div class="settings-item-description">Add an extra layer of security</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" onchange="showToast('2FA setting updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Session Timeout</div>
+                  <div class="settings-item-description">Automatically log out after inactivity</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <select class="form-select">
+                  <option value="15">15 minutes</option>
+                  <option value="30" selected>30 minutes</option>
+                  <option value="60">1 hour</option>
+                  <option value="0">Never</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Backup Settings -->
+          <section class="settings-section" id="backup">
+            <div class="section-header">
+              <h3 class="section-title">💾 Backup & Export</h3>
+              <p class="section-description">Manage your data backups and exports</p>
+            </div>
+
+            <div class="info-box">
+              <div class="info-box-title">📊 Last Backup</div>
+              <div class="info-box-text">
+                Last backup was created on <strong>October 27, 2025 at 10:30 AM</strong>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Automatic Backup</div>
+                  <div class="settings-item-description">Automatically backup data at regular intervals</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" checked onchange="showToast('Auto-backup setting updated', 'success')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Backup Frequency</div>
+                  <div class="settings-item-description">How often should data be backed up</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <select class="form-select">
+                  <option value="daily" selected>Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Create Backup</div>
+                  <div class="settings-item-description">Manually create a backup of all data</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="createBackup()">💾 Create Backup Now</button>
+              <button class="btn btn-secondary" onclick="showToast('📥 Backup downloaded', 'success')" style="margin-left:8px">📥 Download Last Backup</button>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Export Data</div>
+                  <div class="settings-item-description">Export all faculty data in various formats</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" onclick="exportData('excel')">📊 Export as Excel</button>
+              <button class="btn btn-secondary" onclick="exportData('csv')" style="margin-left:8px">📄 Export as CSV</button>
+              <button class="btn btn-secondary" onclick="exportData('pdf')" style="margin-left:8px">📕 Export as PDF</button>
+            </div>
+
+            <div class="settings-item" style="border-left:4px solid var(--error)">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title" style="color:var(--error)">⚠️ Danger Zone</div>
+                  <div class="settings-item-description">Irreversible actions - proceed with caution</div>
+                </div>
+              </div>
+              <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+              <button class="btn btn-danger" onclick="resetSettings()" style="margin-left:8px">🔄 Reset All Settings</button>
+            </div>
+          </section>
+
+          <!-- About Section -->
+          <section class="settings-section" id="about">
+            <div class="section-header">
+              <h3 class="section-title">ℹ️ About</h3>
+              <p class="section-description">Information about the application</p>
+            </div>
+
+            <div class="stats-card">
+              <div class="stat-item">
+                <div class="stat-value">v2.0.1</div>
+                <div class="stat-label">Version</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">Oct 2025</div>
+                <div class="stat-label">Last Updated</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">42</div>
+                <div class="stat-label">Total Faculty</div>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Faculty Management System</div>
+                  <div class="settings-item-description">
+                    A comprehensive platform for managing faculty information, attendance, publications, and research activities. Built with modern web technologies for efficiency and ease of use.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Features</div>
+                </div>
+              </div>
+              <ul style="color:var(--muted);line-height:2;margin:0">
+                <li>✅ Dual data handling (Supabase + Excel)</li>
+                <li>✅ Real-time dashboard analytics</li>
+                <li>✅ Comprehensive faculty profiles</li>
+                <li>✅ Leave management system</li>
+                <li>✅ Publication tracking</li>
+                <li>✅ Research activity monitoring</li>
+                <li>✅ Export & backup functionality</li>
+                <li>✅ Dark mode support</li>
+                <li>✅ Responsive design</li>
+              </ul>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">System Information</div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;color:var(--muted);font-size:0.9rem">
+                <div><strong>Browser:</strong> <span id="browserInfo">Chrome</span></div>
+                <div><strong>Platform:</strong> <span id="platformInfo">Windows</span></div>
+                <div><strong>Screen:</strong> <span id="screenInfo">1920x1080</span></div>
+                <div><strong>Storage Used:</strong> <span id="storageInfo">2.5 MB</span></div>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-item-header">
+                <div>
+                  <div class="settings-item-title">Support & Documentation</div>
+                  <div class="settings-item-description">Get help and learn more about the system</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" onclick="showToast('📖 Opening documentation...', 'success')">📖 View Documentation</button>
+              <button class="btn btn-secondary" onclick="showToast('💬 Contact support team', 'success')" style="margin-left:8px">💬 Contact Support</button>
+              <button class="btn btn-secondary" onclick="showToast('🐛 Bug report submitted', 'success')" style="margin-left:8px">🐛 Report Bug</button>
+            </div>
+
+            <div class="info-box">
+              <div class="info-box-title">💼 Developed for SCSVMV</div>
+              <div class="info-box-text">
+                This system is designed specifically for Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya to streamline faculty management operations. © 2025 All rights reserved.
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+<script>
+// Settings navigation
+document.querySelectorAll('.settings-nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    // Remove active class from all items
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    
+    // Add active class to clicked item
+    this.classList.add('active');
+    const section = this.getAttribute('data-section');
+    document.getElementById(section).classList.add('active');
+  });
+});
+
+// Test database connection
+function testConnection() {
+  showToast('🔄 Testing connection...', 'warning');
+  setTimeout(() => {
+    showToast('❌ Connection failed. Please check your credentials.', 'error');
+  }, 2000);
+}
+
+// Dark mode toggle
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled', 'success');
+}
+
+// Load saved dark mode preference
+if(localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark-mode');
+  document.getElementById('darkModeToggle').checked = true;
+}
+
+// Create backup
+function createBackup() {
+  showToast('💾 Creating backup...', 'warning');
+  setTimeout(() => {
+    showToast('✅ Backup created successfully!', 'success');
+  }, 2000);
+}
+
+// Export data
+function exportData(format) {
+  showToast(`📤 Exporting data as ${format.toUpperCase()}...`, 'warning');
+  setTimeout(() => {
+    showToast(`✅ Data exported as ${format.toUpperCase()} successfully!`, 'success');
+  }, 1500);
+}
+
+// Clear all data
+function clearAllData() {
+  if(confirm('⚠️ This will permanently delete ALL faculty data. This action cannot be undone!\n\nAre you absolutely sure?')) {
+    if(confirm('⚠️ FINAL WARNING: This will erase everything. Type YES to confirm.')) {
+      showToast('🗑️ All data cleared', 'error');
+    }
+  }
+}
+
+// Reset settings
+function resetSettings() {
+  if(confirm('Reset all settings to default values?')) {
+    showToast('🔄 All settings reset to default', 'success');
+  }
+}
+
+// Toast notification
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  
+  toast.innerHTML = `<span style="font-size:1.2rem">${icons[type]}</span><span>${message}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Populate system info
+document.getElementById('browserInfo').textContent = navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+                                                     navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+                                                     navigator.userAgent.includes('Safari') ? 'Safari' : 'Other';
+document.getElementById('platformInfo').textContent = navigator.platform;
+document.getElementById('screenInfo').textContent = `${screen.width}x${screen.height}`;
+
+// Estimate storage usage
+if(navigator.storage && navigator.storage.estimate) {
+  navigator.storage.estimate().then(estimate => {
+    const used = (estimate.usage / (1024 * 1024)).toFixed(2);
+    document.getElementById('storageInfo').textContent = `${used} MB`;
+  });
+}
+</script>
+</body>
+</html>

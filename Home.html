@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCSVMV Attendance System - Home</title>
+
+  <style>
+    :root {
+      --accent: #004aad;
+      --accent-light: #1e88e5;
+      --bg: #f8fafc;
+      --text-dark: #1e293b;
+      --text-light: #475569;
+      --white: #ffffff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --radius: 14px;
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* NAVIGATION */
+    nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      padding: 16px 0;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 500;
+      font-size: 15px;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 0%;
+      height: 3px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    nav a:hover::after, nav a.active::after {
+      width: 100%;
+    }
+
+    nav a.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* HERO SECTION */
+    header {
+      text-align: center;
+      padding: 50px 20px 30px;
+    }
+
+    header img {
+      width: 100px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 10px 0 8px;
+      color: var(--accent);
+    }
+
+    header p {
+      font-size: 18px;
+      color: var(--text-light);
+      margin-top: 0;
+    }
+
+    .date-time {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-top: 10px;
+    }
+
+    /* LIVE STATUS HERO */
+    .hero-stats {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .status-banner {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: var(--white);
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .status-banner h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-3px);
+    }
+
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .stat-percent {
+      font-size: 12px;
+      margin-top: 5px;
+      opacity: 0.8;
+    }
+
+    /* PROGRESS BAR */
+    .progress-container {
+      margin-top: 25px;
+      text-align: left;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--white);
+      border-radius: 20px;
+      transition: width 1s ease;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    /* ALERTS SECTION */
+    .alerts-section {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .alert-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 15px;
+      border-left: 4px solid;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .alert-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 10px 30px rgba(0, 74, 173, 0.1);
+    }
+
+    .alert-card.critical { border-left-color: var(--error); }
+    .alert-card.warning { border-left-color: var(--warning); }
+    .alert-card.info { border-left-color: var(--accent); }
+    .alert-card.success { border-left-color: var(--success); }
+
+    .alert-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .alert-text {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .alert-action {
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .alert-action:hover {
+      background: var(--accent-light);
+      transform: scale(1.05);
+    }
+
+    /* MAIN CONTENT */
+    main {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 74, 173, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .card p {
+      color: var(--text-light);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* QUICK ACTIONS */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .action-btn {
+      background: var(--white);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 20px;
+      border-radius: var(--radius);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .action-btn:hover {
+      background: var(--accent);
+      color: var(--white);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 74, 173, 0.15);
+    }
+
+    .action-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .action-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* DEPARTMENT CARDS */
+    .dept-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 15px;
+    }
+
+    .dept-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+    .dept-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .dept-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .dept-progress {
+      margin-top: 10px;
+    }
+
+    .dept-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .dept-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 10px;
+      transition: width 0.6s ease;
+    }
+
+    .dept-progress-fill.high { background: var(--success); }
+    .dept-progress-fill.medium { background: var(--warning); }
+    .dept-progress-fill.low { background: var(--error); }
+
+    /* LIVE FEED */
+    .live-feed {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .feed-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      transition: background 0.2s ease;
+    }
+
+    .feed-item:last-child {
+      border-bottom: none;
+    }
+
+    .feed-item:hover {
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+
+    .feed-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .feed-icon.present { background: #d1fae5; color: var(--success); }
+    .feed-icon.absent { background: #fee2e2; color: var(--error); }
+    .feed-icon.late { background: #fef3c7; color: var(--warning); }
+
+    .feed-content {
+      flex: 1;
+    }
+
+    .feed-text {
+      font-size: 14px;
+      color: var(--text-dark);
+      margin-bottom: 3px;
+    }
+
+    .feed-time {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 14px;
+      padding: 30px;
+      margin-top: 50px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      header h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav id="topNav">
+    <a href="Home.html" class="active">Home</a>
+    <a href="Dashboard.html">Dashboard</a>
+    <a href="Manual_attendance.html">Attendance</a>
+    <a href="Analytics.html">Analytics</a>
+    
+   
+  </nav>
+
+  <header>
+    <img src="Logo_high res.png" alt="University Logo" onerror="this.style.display='none'" />
+    <h1>Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya</h1>
+    <p>Real-time Attendance & Faculty Management System</p>
+    <div class="date-time">
+      <span id="currentDate"></span> • <span id="currentTime"></span>
+    </div>
+  </header>
+
+  <!-- LIVE STATUS HERO -->
+  <section class="hero-stats">
+    <div class="status-banner">
+      <h2>📊 Today's Live Attendance Status</h2>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number" id="presentCount">156</div>
+          <div class="stat-label">✅ PRESENT</div>
+          <div class="stat-percent" id="presentPercent">(87%)</div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-number" id="absentCount">12</div>
+          <div class="stat-label">❌ ABSENT</div>
+          <div class="stat-percent" id="absentPercent">(7%)</div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-number" id="lateCount">8</div>
+          <div class="stat-label">⏰ LATE</div>
+          <div class="stat-percent" id="latePercent">(4%)</div>
+        </div>
+        
+        <div class="stat-box">
+          <div class="stat-number" id="leaveCount">4</div>
+          <div class="stat-label">🏖️ ON LEAVE</div>
+          <div class="stat-percent" id="leavePercent">(2%)</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Overall Attendance Progress</span>
+          <span><strong id="overallPercent">87%</strong> • Target: 90%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 87%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTS -->
+  <section class="alerts-section">
+    <div class="alert-card critical">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-content">
+        <div class="alert-title">High Priority Alert</div>
+        <div class="alert-text">3 employees absent for 3+ consecutive days</div>
+      </div>
+      <button class="alert-action" onclick="window.location.href='Dashboard.html'">View Details</button>
+    </div>
+
+    <div class="alert-card warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Needs Review</div>
+        <div class="alert-text">15 attendance records flagged for manual review</div>
+      </div>
+      <button class="alert-action" onclick="window.location.href='Dashboard.html'">Review Now</button>
+    </div>
+
+    <div class="alert-card success">
+      <div class="alert-icon">📈</div>
+      <div class="alert-content">
+        <div class="alert-title">Good News</div>
+        <div class="alert-text">Overall attendance improved by 5% compared to last week</div>
+      </div>
+      <button class="alert-action">View Trends</button>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- QUICK ACTIONS -->
+    <div class="section-title">⚡ Quick Actions</div>
+    <div class="quick-actions">
+      <div class="action-btn" onclick="window.location.href='Import.html'">
+        <div class="action-icon">📤</div>
+        <div class="action-label">Import Biometric Data</div>
+      </div>
+      
+      <div class="action-btn" onclick="window.location.href='Dashboard.html'">
+        <div class="action-icon">👁️</div>
+        <div class="action-label">View All Employees</div>
+      </div>
+      
+      <div class="action-btn" onclick="window.location.href='Reports.html'">
+        <div class="action-icon">📊</div>
+        <div class="action-label">Generate Report</div>
+      </div>
+      
+      <div class="action-btn" onclick="window.location.href='Settings.html'">
+        <div class="action-icon">⚙️</div>
+        <div class="action-label">System Settings</div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENT OVERVIEW -->
+    <div class="section-title" style="margin-top: 40px;">🏢 Department Overview</div>
+    
+    <div class="dept-card">
+      <div class="dept-header">
+        <div class="dept-name">📚 Computer Science</div>
+        <div class="dept-stats">
+          <span>Present: <strong>38/45</strong></span>
+          <span style="color: var(--warning);">⚠️ 84%</span>
+        </div>
+      </div>
+      <div class="dept-progress">
+        <div class="dept-progress-bar">
+          <div class="dept-progress-fill medium" style="width: 84%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dept-card">
+      <div class="dept-header">
+        <div class="dept-name">🔬 Data Science</div>
+        <div class="dept-stats">
+          <span>Present: <strong>26/28</strong></span>
+          <span style="color: var(--success);">✅ 93%</span>
+        </div>
+      </div>
+      <div class="dept-progress">
+        <div class="dept-progress-bar">
+          <div class="dept-progress-fill high" style="width: 93%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dept-card">
+      <div class="dept-header">
+        <div class="dept-name">🏛️ Administration</div>
+        <div class="dept-stats">
+          <span>Present: <strong>20/22</strong></span>
+          <span style="color: var(--success);">✅ 91%</span>
+        </div>
+      </div>
+      <div class="dept-progress">
+        <div class="dept-progress-bar">
+          <div class="dept-progress-fill high" style="width: 91%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dept-card">
+      <div class="dept-header">
+        <div class="dept-name">🧹 Support Staff</div>
+        <div class="dept-stats">
+          <span>Present: <strong>32/35</strong></span>
+          <span style="color: var(--success);">✅ 91%</span>
+        </div>
+      </div>
+      <div class="dept-progress">
+        <div class="dept-progress-bar">
+          <div class="dept-progress-fill high" style="width: 91%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN LAYOUT -->
+    <div class="content-grid" style="margin-top: 40px;">
+      <!-- LIVE ACTIVITY FEED -->
+      <div>
+        <div class="section-title">📡 Live Activity</div>
+        <div class="live-feed">
+          <div class="feed-item">
+            <div class="feed-icon present">✓</div>
+            <div class="feed-content">
+              <div class="feed-text">Rajesh (CSE) checked out</div>
+              <div class="feed-time">2 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="feed-item">
+            <div class="feed-icon present">✓</div>
+            <div class="feed-content">
+              <div class="feed-text">Ravi (Janitor) checked in</div>
+              <div class="feed-time">5 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="feed-item">
+            <div class="feed-icon late">⏰</div>
+            <div class="feed-content">
+              <div class="feed-text">Dr. Kumar marked for review</div>
+              <div class="feed-time">8 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="feed-item">
+            <div class="feed-icon present">✓</div>
+            <div class="feed-content">
+              <div class="feed-text">(Admin) checked out</div>
+              <div class="feed-time">12 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="feed-item">
+            <div class="feed-icon absent">✗</div>
+            <div class="feed-content">
+              <div class="feed-text">System detected anomaly</div>
+              <div class="feed-time">15 minutes ago</div>
+            </div>
+          </div>
+
+          <div class="feed-item">
+            <div class="feed-icon present">✓</div>
+            <div class="feed-content">
+              <div class="feed-text">Security Guard (Night) checked in</div>
+              <div class="feed-time">18 minutes ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM INFO -->
+      <div>
+        <div class="section-title">💡 System Insights</div>
+        <div class="card">
+          <h3>✅ Good Performance</h3>
+          <p>Data Science department maintains 93% attendance - highest this week</p>
+        </div>
+
+        <div class="card">
+          <h3>📊 Observation</h3>
+          <p>Monday & Friday show lower attendance patterns. Consider targeted monitoring.</p>
+        </div>
+
+        <div class="card">
+          <h3>⚠️ Attention Needed</h3>
+          <p>Computer Science department below 85% target. 7 faculty members need follow-up.</p>
+        </div>
+
+        <div class="card">
+          <h3>🎯 Recommendation</h3>
+          <p>Set up automatic alerts for 3-day consecutive absences to catch issues early.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2025 SCSVMV Attendance Management System | Designed by Amigos
+  </footer>
+
+  <script>
+    // Update date and time
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    // Simulate real-time updates
+    function simulateUpdates() {
+      const present = document.getElementById('presentCount');
+      const currentCount = parseInt(present.textContent);
+      const change = Math.random() > 0.5 ? 1 : -1;
+      const newCount = Math.max(150, Math.min(165, currentCount + change));
+      
+      present.textContent = newCount;
+      const total = 180;
+      const percent = Math.round((newCount / total) * 100);
+      document.getElementById('presentPercent').textContent = `(${percent}%)`;
+      document.getElementById('overallPercent').textContent = `${percent}%`;
+      document.getElementById('progressFill').style.width = `${percent}%`;
+    }
+
+    // Update every 10 seconds
+    setInterval(simulateUpdates, 10000);
+
+    // Navigation highlighting
+    (function(){
+      let file = window.location.pathname.split("/").pop().toLowerCase() || "home.html";
+      if(file === "" || file === "index.html") file = "home.html";
+      const nav = document.getElementById("topNav");
+      Array.from(nav.querySelectorAll("a")).forEach(a=>{
+        const href = a.getAttribute("href").toLowerCase();
+        a.classList.toggle("active", href === file);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[
+  { "username": "HOD", "password": "SCSVMV@123", "role": "admin" },
+  { "username": "Professor", "password": "Prof@123", "role": "professor" } 
+]

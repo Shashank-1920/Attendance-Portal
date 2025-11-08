@@ -1,0 +1,87 @@
+Teacher portfolio
+Team members:
+Sathwik
+Karthikeya
+Shashank
+Keerthana
+Navya
+Vangmaya
+
+Base project:
+Make an portfolio like interface for teachers in the university.
+
+Options:
+1.Web app(recommended)
+2.Desktop app
+3.mobile app
+_____________________________________________________________________________________
+Case 1: Web app
+
+Core features:
+1)Search and filter->Find a professor by ID, name etc
+2)Profile View-> Show all details,remarks etc. more like a mini CV
+3)Attendence and timing-> show in time, out time
+4)sorting->By salary,performance,join date etc
+5)Autentication(optional)->a part of the data set (like Salary) would be masked upto a certain level.
+
+*note: this is not the final list of features. Also there is no need to implement all the features at the same time.
+
+Team division(Flexible):
+1)Frontend->2 members
+2)Backend->2 members
+3)database(will be a part of Backend)->1 member
+4)tester(will be a part of Frontend)->1 member
+
+
+Tools used(flexible):
+Frontend: HTML+CSS+JS /React(optional)
+Backend:Python flask/Django
+Database: Supabase /PostGRE SQL/SQLite
+Version control: Github.
+
+Blueprint:
+phase1:
+Explore the dataset,clean it,decide stack.
+phase2:
+each team starts with their design process
+phase3:
+Integrate all the teams works. Polish and test for bugs.
+rectify and repeat.
+_____________________________________________________________________________________
+Case 2: Desktop App
+
+Core features:
+1)Search & Filter–> by name, ID, department.
+
+2)Profile View–> popup window with professor details.
+
+3)Attendance/Work Hours–> auto-calc from in/out time.
+
+4)Add/Edit/Delete–> if admins can update records.
+5)Export->Export data as Excell/CSV etc
+
+5)Login–> simple username/password.
+
+Team division(flexible):
+1.UI/UX:2 members
+2.Database control: 1 member
+3.Logic layer: 2 members
+4.Testing:1 member
+
+Tools used(flexible):
+UI/UX: Python Tkinter,ttkbootstrap(optional for modern themes),Figma
+Database control:  SQLite,Excel/CSV knowledge(for import/export),DB browser for SQLite
+Logic layer: Python 3.x(3.9 preferable),SQLite moduule in python,Pandas(optional for Complex data handeling)
+
+Blueprint:
+Phase 1: Clean dataset → design database schema (tables).
+
+Phase 2: Basic Tkinter UI (main menu, search bar, results table).
+
+Phase 3: Connect UI ↔ SQLite (queries: SELECT, INSERT, UPDATE).
+
+Phase 4: Add extras (attendance calc, profile popup).
+
+Phase 5: Testing & packaging (PyInstaller to make .exe).
+_____________________________________________________________________________________
+
